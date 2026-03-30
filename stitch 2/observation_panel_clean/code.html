@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "tertiary": "#545f73",
+            "surface-container": "#eceef0",
+            "surface-container-low": "#f2f4f6",
+            "on-primary-fixed-variant": "#004c6e",
+            "tertiary-container": "#919cb2",
+            "inverse-surface": "#2d3133",
+            "surface-tint": "#006591",
+            "secondary": "#006c49",
+            "on-surface": "#191c1e",
+            "inverse-on-surface": "#eff1f3",
+            "secondary-fixed": "#6ffbbe",
+            "on-primary": "#ffffff",
+            "primary-container": "#0ea5e9",
+            "on-background": "#191c1e",
+            "outline": "#6e7881",
+            "primary": "#006591",
+            "on-error-container": "#93000a",
+            "on-tertiary": "#ffffff",
+            "surface-container-highest": "#e0e3e5",
+            "on-secondary-fixed-variant": "#005236",
+            "tertiary-fixed-dim": "#bcc7de",
+            "on-tertiary-fixed-variant": "#3c475a",
+            "on-tertiary-container": "#293446",
+            "primary-fixed-dim": "#89ceff",
+            "surface-container-high": "#e6e8ea",
+            "tertiary-fixed": "#d8e3fb",
+            "on-secondary": "#ffffff",
+            "on-secondary-container": "#00714d",
+            "background": "#f7f9fb",
+            "on-primary-fixed": "#001e2f",
+            "surface-dim": "#d8dadc",
+            "on-error": "#ffffff",
+            "on-secondary-fixed": "#002113",
+            "error-container": "#ffdad6",
+            "inverse-primary": "#89ceff",
+            "surface-variant": "#e0e3e5",
+            "on-tertiary-fixed": "#111c2d",
+            "primary-fixed": "#c9e6ff",
+            "outline-variant": "#bec8d2",
+            "surface": "#f7f9fb",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#4edea3",
+            "surface-bright": "#f7f9fb",
+            "error": "#ba1a1a",
+            "on-primary-container": "#003751",
+            "secondary-container": "#6cf8bb",
+            "on-surface-variant": "#3e4850"
+          },
+          fontFamily: {
+            "headline": ["Plus Jakarta Sans"],
+            "body": ["Plus Jakarta Sans"],
+            "label": ["Plus Jakarta Sans"]
+          },
+          borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glass-glint {
+      position: relative;
+    }
+    .glass-glint::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased min-h-screen">
+<!-- SideNavBar Anchor -->
+<aside class="fixed left-0 top-0 h-full flex flex-col p-6 h-screen w-64 border-r border-white/10 bg-slate-50/70 dark:bg-slate-900/70 backdrop-blur-xl z-50">
+<div class="mb-12 px-4">
+<h1 class="text-xl font-bold tracking-tighter text-sky-900 dark:text-sky-100">KinderMotion</h1>
+<p class="text-xs font-medium tracking-tight text-sky-700 opacity-60">Premium Clarity</p>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:scale-[1.02] transition-transform duration-200 hover:bg-slate-100/50" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-plus-jakarta text-sm font-medium tracking-tight">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:scale-[1.02] transition-transform duration-200 hover:bg-slate-100/50" href="#">
+<span class="material-symbols-outlined" data-icon="accessibility_new">accessibility_new</span>
+<span class="font-plus-jakarta text-sm font-medium tracking-tight">Child Profiles</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:scale-[1.02] transition-transform duration-200 hover:bg-slate-100/50" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-plus-jakarta text-sm font-medium tracking-tight">Report Creator</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-sky-700 dark:text-sky-300 bg-sky-50/50 dark:bg-sky-900/30 rounded-full hover:scale-[1.02] transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+<span class="font-plus-jakarta text-sm font-medium tracking-tight">Observation Panel</span>
+</a>
+</nav>
+<div class="mt-auto px-4 pb-4">
+<div class="flex items-center gap-3">
+<img alt="Teacher Profile" class="w-10 h-10 rounded-full object-cover" data-alt="professional portrait of a friendly female teacher in a brightly lit modern classroom environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBP_lBsH6jF0BV-5x5-jHkwjXTSH2sSaJgGDbMz8FLrD4ZcXj0xKF5YaEUzpKgj_CJfniAOd0Jhm94CzE0OJ5PphtV6o-fCtpnrljbRRdX4vol08mU7amrVyHNsr1EHY7V4rdfYn0qcpT_-Ytu_L2YqgIluBlg0MUXQSSgCmm4FDtFLpBxs0vcozWtr1Wb9jhqQVmsIUv9Gft4tV30AY7nvF29TSeJf5wkfzjh3OQznpgT0hFL3Zh_kIxR1QaEsSIVBQnxHCbZVWeM"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Elena Rodriguez</p>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant">Lead Educator</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Shell -->
+<main class="ml-64 min-h-screen">
+<!-- TopNavBar Anchor -->
+<header class="flex justify-between items-center px-8 w-full sticky top-0 z-40 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md h-16 border-b border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 bg-secondary/10 px-4 py-1.5 rounded-full">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="text-sm font-semibold text-secondary tracking-tight">Live: 14 Children Active</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4">
+<button class="text-slate-500 hover:text-sky-600 transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-slate-500 hover:text-sky-600 transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Observation Dashboard Grid -->
+<div class="p-8 lg:p-12 max-w-[1400px] mx-auto">
+<div class="mb-10">
+<h2 class="text-3xl font-extrabold tracking-tight text-on-surface mb-2">Observation Panel</h2>
+<p class="text-on-surface-variant max-w-xl">A curated real-time view of classroom development and critical safety markers.</p>
+</div>
+<!-- Split Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+<!-- Left: Live Stream (8 cols) -->
+<section class="lg:col-span-8">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-xs font-bold uppercase tracking-[0.15em] text-on-surface-variant">Live Stream &amp; Milestones</h3>
+<button class="text-xs font-bold text-primary flex items-center gap-1 hover:underline">
+              FILTER BY ACTIVITY <span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+<div class="space-y-6">
+<!-- Observation Card 1 -->
+<div class="group bg-surface-container-lowest p-6 rounded-lg transition-all duration-300 hover:scale-[1.01] flex gap-6 items-start">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="emoji_events">emoji_events</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-center mb-1">
+<h4 class="font-bold text-on-surface">Leo M. — Gross Motor Milestone</h4>
+<span class="text-[10px] font-medium text-on-surface-variant opacity-60">12:42 PM</span>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed">Demonstrated sustained balance during the "Tree Pose" exercise for 15 seconds. High focus noted during the transition.</p>
+<div class="mt-4 flex gap-2">
+<span class="px-3 py-1 bg-surface-container-low text-[10px] font-bold rounded-full text-on-surface-variant">PHYSICAL DEVELOPMENT</span>
+<span class="px-3 py-1 bg-surface-container-low text-[10px] font-bold rounded-full text-on-surface-variant">CLASS B</span>
+</div>
+</div>
+</div>
+<!-- Observation Card 2 -->
+<div class="group bg-surface-container-lowest p-6 rounded-lg transition-all duration-300 hover:scale-[1.01] flex gap-6 items-start">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-secondary/5 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="forum">forum</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-center mb-1">
+<h4 class="font-bold text-on-surface">Maya S. — Social Interaction</h4>
+<span class="text-[10px] font-medium text-on-surface-variant opacity-60">12:35 PM</span>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed">Voluntarily shared sensory materials with a peer during open-ended play. Used verbal negotiation successfully.</p>
+<div class="mt-4 flex gap-2">
+<span class="px-3 py-1 bg-surface-container-low text-[10px] font-bold rounded-full text-on-surface-variant">EMOTIONAL INTEL</span>
+</div>
+</div>
+</div>
+<!-- Observation Card 3 -->
+<div class="group bg-surface-container-lowest p-6 rounded-lg transition-all duration-300 hover:scale-[1.01] flex gap-6 items-start">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="palette">palette</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-center mb-1">
+<h4 class="font-bold text-on-surface">Ethan W. — Cognitive Engagement</h4>
+<span class="text-[10px] font-medium text-on-surface-variant opacity-60">12:20 PM</span>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed">Sorted 10 geometric blocks by color and shape without guidance. Observed high level of task persistence.</p>
+<div class="mt-4 flex gap-2">
+<span class="px-3 py-1 bg-surface-container-low text-[10px] font-bold rounded-full text-on-surface-variant">COGNITIVE</span>
+<span class="px-3 py-1 bg-surface-container-low text-[10px] font-bold rounded-full text-on-surface-variant">STEM</span>
+</div>
+</div>
+</div>
+<!-- Empty state filler visual hint -->
+<div class="py-12 flex flex-col items-center opacity-20">
+<span class="material-symbols-outlined text-4xl mb-2" data-icon="history">history</span>
+<p class="text-sm font-medium">Scroll for earlier observations</p>
+</div>
+</div>
+</section>
+<!-- Right: Active Notifications (4 cols) -->
+<aside class="lg:col-span-4 sticky top-28">
+<div class="mb-8">
+<h3 class="text-xs font-bold uppercase tracking-[0.15em] text-on-surface-variant">Active Notifications</h3>
+</div>
+<div class="space-y-4">
+<!-- Vital Alert: Heart Rate (Soft Red) -->
+<div class="bg-error-container/20 border border-error/5 p-5 rounded-lg">
+<div class="flex gap-4 items-center mb-3">
+<div class="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center text-error">
+<span class="material-symbols-outlined" data-icon="monitor_heart" data-weight="fill" style="font-variation-settings: 'FILL' 1;">monitor_heart</span>
+</div>
+<div>
+<h4 class="font-bold text-on-error-container text-sm">Heart Rate Alert: Sofia P.</h4>
+<p class="text-[10px] font-bold text-error uppercase tracking-wider">High Intensity Activity</p>
+</div>
+</div>
+<div class="bg-white/50 rounded-md p-3 mb-3">
+<div class="flex justify-between items-end">
+<span class="text-2xl font-black text-on-surface tracking-tighter">134 <span class="text-xs font-medium text-on-surface-variant">BPM</span></span>
+<span class="text-[10px] font-bold text-on-surface-variant">NOW</span>
+</div>
+</div>
+<button class="w-full py-2 bg-error text-white text-xs font-bold rounded-full hover:scale-102 transition-transform">ACKNOWLEDGE</button>
+</div>
+<!-- Movement Alert: (Soft Amber/Tertiary Container) -->
+<div class="bg-tertiary-fixed p-5 rounded-lg">
+<div class="flex gap-4 items-center mb-3">
+<div class="w-10 h-10 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined" data-icon="motion_sensor">motion_sensor_active</span>
+</div>
+<div>
+<h4 class="font-bold text-on-tertiary-fixed text-sm">Exit Zone Alert</h4>
+<p class="text-[10px] font-bold text-tertiary uppercase tracking-wider">East Entrance</p>
+</div>
+</div>
+<p class="text-xs text-on-tertiary-fixed-variant leading-relaxed mb-4">Unidentified movement detected near the sensory garden perimeter gate.</p>
+<div class="flex gap-2">
+<button class="flex-1 py-2 bg-white text-on-surface text-xs font-bold rounded-full">CHECK CAMERA</button>
+<button class="px-4 py-2 border border-tertiary/20 text-on-surface text-xs font-bold rounded-full"><span class="material-symbols-outlined text-sm" data-icon="close">close</span></button>
+</div>
+</div>
+<!-- Contextual Info Card -->
+<div class="bg-surface-container-low p-6 rounded-lg text-center mt-12">
+<span class="material-symbols-outlined text-primary mb-3 text-3xl" data-icon="verified_user" data-weight="fill" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<h5 class="font-bold text-on-surface text-sm mb-1">Safety Protocols Active</h5>
+<p class="text-xs text-on-surface-variant">All biometric sensors are synced and reporting 100% uptime for this session.</p>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</main>
+<!-- Responsive FAB Suppression (As per logic: suppress on Detail/Panel views) -->
+<!-- Note: FAB is omitted intentionally to prioritize the focused canvas of the Observation Panel -->
+</body></html>
