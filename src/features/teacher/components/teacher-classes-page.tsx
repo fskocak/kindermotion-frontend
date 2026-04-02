@@ -37,13 +37,11 @@ export function TeacherClassesPageContent() {
   return (
     <DashboardPage
       eyebrow="Teacher / My Classes"
-      title="Review the classes assigned to your account."
-      description="This page loads real teacher-owned classes and gives you a direct path into the students view for each classroom."
+      title="My Classes"
     >
       <DashboardSectionCard
         eyebrow="Class Directory"
-        title="My Classes"
-        description="Classes are loaded from the teacher-scoped endpoint and ordered by most recently created."
+        title="Your Classes"
         actions={
           <Button
             type="button"

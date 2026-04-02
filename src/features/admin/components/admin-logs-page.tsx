@@ -106,12 +106,10 @@ export function AdminLogsPageContent() {
     <DashboardPage
       eyebrow="Admin / Logs"
       title="Review administrative actions in a clean read-only stream."
-      description="This MVP page surfaces backend admin logs without filters or table complexity so the operational trail is already visible."
     >
       <DashboardSectionCard
         eyebrow="Activity Stream"
         title="Logs"
-        description="Most recent administrative events ordered by creation time, with lightweight frontend filters for quick review."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {activeFilterCount > 0 ? (

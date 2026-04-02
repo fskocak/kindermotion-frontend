@@ -162,13 +162,11 @@ export function AdminTeachersPageContent() {
     <DashboardPage
       eyebrow="Admin / Teachers"
       title="Manage teacher accounts from one protected workspace."
-      description="This MVP screen lets you review teacher accounts, create new ones, and keep the data flow connected to the existing admin auth shell."
     >
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <DashboardSectionCard
           eyebrow="Teacher Directory"
           title="Teachers"
-          description="Current teacher accounts powered by backend search and pagination."
           actions={
             <Button
               type="button"
@@ -301,7 +299,6 @@ export function AdminTeachersPageContent() {
         <DashboardSectionCard
           eyebrow="Create Teacher"
           title="Add a new teacher"
-          description="Use a minimal account creation flow aligned with the existing backend DTO."
         >
           <form className="grid gap-5" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid gap-2">

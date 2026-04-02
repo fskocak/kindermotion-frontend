@@ -18,11 +18,11 @@ export function DashboardShell({ role, children }: DashboardShellProps) {
   const navItems = DASHBOARD_NAV_ITEMS[role];
 
   return (
-    <div className="min-h-screen px-4 py-4 sm:px-6 sm:py-6">
-      <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <DashboardSidebar role={role} items={navItems} pathname={pathname} />
+    <div className="min-h-screen px-3 py-3 sm:px-4 sm:py-4 lg:px-5 lg:py-5">
+      <div className="mx-auto grid max-w-[1720px] gap-4 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-5">
+        <DashboardSidebar items={navItems} pathname={pathname} />
 
-        <div className="flex min-w-0 flex-col gap-6">
+        <div className="flex min-w-0 flex-col gap-5">
           <DashboardHeader role={role} />
           <main className="min-w-0">{children}</main>
         </div>

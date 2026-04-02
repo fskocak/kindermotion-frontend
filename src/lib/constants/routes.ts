@@ -7,6 +7,7 @@ export const APP_ROUTES = {
   adminClasses: "/admin/classes",
   adminLogs: "/admin/logs",
   teacher: "/teacher",
+  teacherProfile: "/teacher/profile",
   teacherClasses: "/teacher/classes",
 } as const;
 

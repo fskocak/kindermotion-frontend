@@ -76,7 +76,7 @@ export function AdminClassEditModal({
       open={open}
       onClose={onClose}
       title="Edit class"
-      description="Update the class name and teacher assignment using the same DTO-shaped flow as class creation."
+      description="Update the class name and teacher assignment."
     >
       <form className="grid gap-5" onSubmit={form.handleSubmit(onSubmit)}>
         <div className="grid gap-2">

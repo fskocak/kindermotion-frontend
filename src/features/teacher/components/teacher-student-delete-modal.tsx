@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { getTeacherStudentDisplayName } from "@/features/teacher/student-utils";
 import { getApiErrorMessage } from "@/lib/http/get-api-error-message";
 import { teacherService } from "@/services";
 import type { TeacherStudent } from "@/types/teacher";
@@ -22,6 +23,15 @@ export function TeacherStudentDeleteModal({
 }: TeacherStudentDeleteModalProps) {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      return;
+    }
+
+    setFeedback(null);
+    setIsSubmitting(false);
+  }, [open, student]);
 
   async function onDelete() {
     if (!student) {
@@ -49,7 +59,7 @@ export function TeacherStudentDeleteModal({
       onConfirm={onDelete}
       eyebrow="Teacher Action"
       title="Delete student"
-      description="This action removes the student record from the selected class. If the backend blocks deletion because of linked data or ownership rules, the API error will be shown as-is."
+      description="This action removes the student record from the selected class. If the student is linked to other application data, this action might fail."
       confirmLabel="Delete student"
       confirmLoadingLabel="Deleting..."
       isLoading={isSubmitting}
@@ -58,7 +68,8 @@ export function TeacherStudentDeleteModal({
     >
       {student ? (
         <>
-          You are about to remove <strong>{student.fullName}</strong> from this
+          You are about to remove{" "}
+          <strong>{getTeacherStudentDisplayName(student)}</strong> from this
           class.
         </>
       ) : (

@@ -41,13 +41,11 @@ export function TeacherDashboardHome() {
     <DashboardPage
       eyebrow="Teacher Dashboard"
       title={`Welcome back${user?.fullName ? `, ${user.fullName}` : ""}.`}
-      description="This workspace keeps the teacher experience focused: your classes, your students, and a clear path into classroom details."
     >
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <DashboardSectionCard
           eyebrow="Overview"
           title="Your classroom summary"
-          description="A lightweight overview based on the real class data currently available for the signed-in teacher."
         >
           {isLoading ? (
             <DashboardLoadingState label="Loading your classes..." />
@@ -107,7 +105,6 @@ export function TeacherDashboardHome() {
         <DashboardSectionCard
           eyebrow="Quick Access"
           title="Go straight to your classes"
-          description="Use the class area as your primary working surface for students and classroom context."
         >
           <div className="grid gap-4">
             <div className="rounded-[1.75rem] bg-[var(--surface-container-low)] p-5 text-sm leading-6 text-[var(--on-surface-variant)]">

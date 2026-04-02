@@ -49,7 +49,7 @@ export function AdminTeacherDeleteModal({
       onConfirm={onDelete}
       eyebrow="Admin Action"
       title="Delete teacher"
-      description="This action is permanent. If the backend prevents deletion because the teacher is linked to classes, the API error will be shown as-is."
+      description="This action is permanent. If the teacher is linked to classes, they might not be deleted."
       confirmLabel="Delete teacher"
       confirmLoadingLabel="Deleting..."
       isLoading={isSubmitting}

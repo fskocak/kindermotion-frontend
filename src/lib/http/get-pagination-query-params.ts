@@ -4,7 +4,7 @@ type PaginationQueryParams = {
 };
 
 function normalizePage(value: number | undefined) {
-  if (!Number.isInteger(value) || value < 1) {
+  if (value === undefined || !Number.isInteger(value) || value < 1) {
     return undefined;
   }
 
@@ -12,7 +12,12 @@ function normalizePage(value: number | undefined) {
 }
 
 function normalizeLimit(value: number | undefined) {
-  if (!Number.isInteger(value) || value < 1 || value > 100) {
+  if (
+    value === undefined ||
+    !Number.isInteger(value) ||
+    value < 1 ||
+    value > 100
+  ) {
     return undefined;
   }
 

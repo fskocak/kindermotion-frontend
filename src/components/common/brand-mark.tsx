@@ -14,11 +14,11 @@ export function BrandMark({ className, href = "/" }: BrandMarkProps) {
     <Link
       href={href}
       className={cn(
-        "group inline-flex items-center gap-3 transition-transform duration-300 ease-out hover:translate-y-[-1px]",
+        "group inline-flex min-w-0 items-center gap-3 transition-transform duration-300 ease-out hover:translate-y-[-1px]",
         className,
       )}
     >
-      <span className="relative flex size-14 items-center justify-center overflow-hidden rounded-[1.55rem] shadow-[0_18px_40px_rgba(15,23,42,0.14)] transition-all duration-300 ease-out group-hover:shadow-[0_22px_48px_rgba(15,23,42,0.18)]">
+      <span className="relative flex size-14 items-center justify-center overflow-hidden rounded-[1.55rem] shadow-[var(--shadow-brand)] transition-all duration-300 ease-out group-hover:shadow-[var(--shadow-soft)]">
         <Image
           src="/KinderMotion.png"
           alt="KinderMotion logo"
@@ -29,11 +29,11 @@ export function BrandMark({ className, href = "/" }: BrandMarkProps) {
           className="h-full w-full rounded-[1.55rem] object-cover"
         />
       </span>
-      <span className="flex flex-col">
+      <span className="flex min-w-0 flex-col">
         <span className="text-lg font-bold tracking-[-0.04em] text-[var(--on-surface)]">
           {brand.name}
         </span>
-        <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--on-surface-variant)]">
+        <span className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--on-surface-variant)]">
           {brand.signature}
         </span>
       </span>

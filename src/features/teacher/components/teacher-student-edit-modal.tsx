@@ -12,6 +12,10 @@ import {
   teacherStudentFormSchema,
   type TeacherStudentFormValues,
 } from "@/features/teacher/schemas/student-form-schema";
+import {
+  buildTeacherStudentFormValues,
+  buildTeacherStudentMutationPayload,
+} from "@/features/teacher/student-utils";
 import { getApiErrorMessage } from "@/lib/http/get-api-error-message";
 import { teacherService } from "@/services";
 import type { TeacherStudent } from "@/types/teacher";
@@ -19,25 +23,15 @@ import type { TeacherStudent } from "@/types/teacher";
 type TeacherStudentEditModalProps = {
   open: boolean;
   student: TeacherStudent | null;
+  className?: string;
   onClose: () => void;
   onSuccess: () => Promise<void> | void;
 };
 
-function buildDefaultValues(
-  student: TeacherStudent | null,
-): TeacherStudentFormValues {
-  return {
-    fullName: student?.fullName ?? "",
-    allergies: student?.allergies ?? "",
-    conditions: student?.conditions ?? "",
-    medications: student?.medications ?? "",
-    medicalNotes: student?.medicalNotes ?? "",
-  };
-}
-
 export function TeacherStudentEditModal({
   open,
   student,
+  className,
   onClose,
   onSuccess,
 }: TeacherStudentEditModalProps) {
@@ -45,12 +39,18 @@ export function TeacherStudentEditModal({
 
   const form = useForm<TeacherStudentFormValues>({
     resolver: zodResolver(teacherStudentFormSchema),
-    defaultValues: buildDefaultValues(student),
+    defaultValues: buildTeacherStudentFormValues(student),
   });
 
   useEffect(() => {
-    form.reset(buildDefaultValues(student));
+    form.reset(buildTeacherStudentFormValues(student));
   }, [form, student, open]);
+
+  function handleClose() {
+    setFeedback(null);
+    form.reset(buildTeacherStudentFormValues(student));
+    onClose();
+  }
 
   async function onSubmit(values: TeacherStudentFormValues) {
     if (!student) {
@@ -60,7 +60,10 @@ export function TeacherStudentEditModal({
     setFeedback(null);
 
     try {
-      await teacherService.updateStudent(student.id, values);
+      await teacherService.updateStudent(
+        student.id,
+        buildTeacherStudentMutationPayload(values),
+      );
       await onSuccess();
       form.reset(values);
       onClose();
@@ -72,15 +75,16 @@ export function TeacherStudentEditModal({
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       eyebrow="Teacher Action"
       title="Edit student"
-      description="Update the core classroom care fields for this student using the teacher-scoped student update flow."
+      description="Update the student identity, guardian, status, and health fields while preserving the current class-scoped flow."
       className="max-w-3xl"
     >
-      <form className="grid gap-5" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
         <TeacherStudentFormFields
           idPrefix="edit-student"
+          className={className}
           register={form.register}
           errors={form.formState.errors}
         />
@@ -88,7 +92,7 @@ export function TeacherStudentEditModal({
         {feedback ? <MutationFeedback message={feedback} /> : null}
 
         <FormActions
-          onCancel={onClose}
+          onCancel={handleClose}
           submitLabel="Save changes"
           submittingLabel="Saving..."
           isSubmitting={form.formState.isSubmitting}

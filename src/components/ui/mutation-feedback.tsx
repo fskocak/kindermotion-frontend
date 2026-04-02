@@ -7,7 +7,7 @@ const mutationFeedbackVariants = cva(
   {
     variants: {
       variant: {
-        error: "bg-[rgba(255,218,214,0.72)] text-[var(--on-error-container)]",
+        error: "bg-[var(--error-container)] text-[var(--on-error-container)]",
         neutral:
           "bg-[var(--surface-container-low)] text-[var(--on-surface-variant)]",
       },

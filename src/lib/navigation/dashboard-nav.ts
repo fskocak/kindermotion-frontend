@@ -42,5 +42,10 @@ export const DASHBOARD_NAV_ITEMS: DashboardNavConfig = {
       href: APP_ROUTES.teacherClasses,
       icon: BookOpen,
     },
+    {
+      label: "Child Profiles",
+      href: "/teacher/child-profiles",
+      icon: Users,
+    },
   ],
 } as const;

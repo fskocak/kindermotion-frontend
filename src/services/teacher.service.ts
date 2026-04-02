@@ -8,6 +8,7 @@ import type {
   TeacherStudentListParams,
   TeacherStudent,
   UpdateTeacherStudentPayload,
+  TeacherStudentProfileResponse,
 } from "@/types/teacher";
 
 export const teacherService = {
@@ -52,5 +53,11 @@ export const teacherService = {
   },
   async deleteStudent(studentId: string) {
     await httpClient.delete(`${API_ROUTES.teacher.students}/${studentId}`);
+  },
+  async getStudentProfile(studentId: string) {
+    const response = await httpClient.get<TeacherStudentProfileResponse>(
+      `${API_ROUTES.teacher.students}/${studentId}/profile`
+    );
+    return response.data;
   },
 };

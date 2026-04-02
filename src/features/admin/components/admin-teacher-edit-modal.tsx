@@ -73,7 +73,7 @@ export function AdminTeacherEditModal({
       open={open}
       onClose={onClose}
       title="Edit teacher"
-      description="Update the visible account fields for this teacher. Password changes are intentionally excluded from this MVP."
+      description="Update the visible account fields for this teacher."
     >
       <form className="grid gap-5" onSubmit={form.handleSubmit(onSubmit)}>
         <div className="grid gap-2">

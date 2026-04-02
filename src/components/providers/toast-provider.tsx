@@ -43,10 +43,10 @@ const toastIcons = {
 
 const toastStyles = {
   success:
-    "border-[rgba(14,165,233,0.18)] bg-[rgba(239,251,255,0.96)] text-[var(--on-surface)]",
+    "border-[var(--panel-border)] bg-[var(--success-surface)] text-[var(--on-surface)]",
   error:
-    "border-[rgba(220,38,38,0.16)] bg-[rgba(255,218,214,0.92)] text-[var(--on-error-container)]",
-  info: "border-[rgba(190,200,210,0.4)] bg-white/95 text-[var(--on-surface)]",
+    "border-[var(--panel-border)] bg-[var(--error-container)] text-[var(--on-error-container)]",
+  info: "border-[var(--panel-border)] bg-[var(--info-surface)] text-[var(--on-surface)]",
 } satisfies Record<ToastVariant, string>;
 
 type ToastProviderProps = {
@@ -99,14 +99,14 @@ export function ToastProvider({ children }: ToastProviderProps) {
               <div
                 key={toast.id}
                 className={cn(
-                  "pointer-events-auto rounded-[1.6rem] border px-4 py-4 shadow-[0_18px_48px_rgba(15,23,42,0.16)] backdrop-blur-sm",
+                  "pointer-events-auto rounded-[1.6rem] border px-4 py-4 shadow-[var(--shadow-cloud)] backdrop-blur-sm",
                   toastStyles[toast.variant],
                 )}
                 role="status"
                 aria-live="polite"
               >
                 <div className="flex items-start gap-3">
-                  <div className="mt-0.5 rounded-full bg-white/60 p-1.5">
+                  <div className="mt-0.5 rounded-full bg-[var(--icon-chip-background)] p-1.5">
                     <Icon className="size-4" />
                   </div>
 

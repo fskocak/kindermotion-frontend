@@ -12,7 +12,7 @@ export function DashboardErrorState({
   action,
 }: DashboardErrorStateProps) {
   return (
-    <div className="rounded-[1.75rem] bg-[rgba(255,218,214,0.72)] p-6 text-sm leading-6 text-[var(--on-error-container)]">
+    <div className="rounded-[1.75rem] bg-[var(--error-container)] p-6 text-sm leading-6 text-[var(--on-error-container)]">
       <p className="mb-2 text-base font-semibold">{title}</p>
       <p>{description}</p>
       {action ? <div className="mt-4">{action}</div> : null}

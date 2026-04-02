@@ -49,7 +49,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.24)] p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[var(--overlay)] p-3 backdrop-blur-sm sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-label={title}
@@ -57,12 +57,12 @@ export function Modal({
     >
       <div
         className={cn(
-          "km-panel w-full max-w-xl rounded-[2rem] p-6 shadow-[0_24px_64px_rgba(15,23,42,0.16)] sm:p-8",
+          "km-panel my-auto max-h-[calc(100vh-1.5rem)] w-full max-w-xl overflow-y-auto rounded-[2rem] p-5 shadow-[var(--shadow-soft)] sm:max-h-[calc(100vh-2rem)] sm:p-6",
           className,
         )}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="mb-6 flex items-start justify-between gap-4">
+        <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <p className="km-eyebrow mb-3 text-xs font-semibold">{eyebrow}</p>
             <h2 className="text-2xl font-semibold tracking-[-0.03em] text-[var(--on-surface)]">
@@ -76,7 +76,7 @@ export function Modal({
           </div>
           <button
             type="button"
-            className="rounded-full p-2 text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--surface-container-low)]"
+            className="rounded-full p-2 text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--hover-overlay)]"
             onClick={onClose}
             aria-label="Close modal"
           >

@@ -2,9 +2,16 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
+import {
+  formatTeacherStudentDate,
+  getTeacherStudentAge,
+  getTeacherStudentDisplayName,
+  getTeacherStudentGenderLabel,
+  getTeacherStudentStatusLabel,
+} from "@/features/teacher/student-utils";
+import { TeacherStudentDetailField } from "@/features/teacher/components/teacher-student-detail-field";
 import { formatDateTime } from "@/lib/format/date-time";
 import type { TeacherStudent } from "@/types/teacher";
-import { TeacherStudentDetailField } from "@/features/teacher/components/teacher-student-detail-field";
 
 type TeacherStudentDetailModalProps = {
   open: boolean;
@@ -17,26 +24,77 @@ export function TeacherStudentDetailModal({
   student,
   onClose,
 }: TeacherStudentDetailModalProps) {
+  const studentName = student ? getTeacherStudentDisplayName(student) : null;
+  const studentAge = student ? getTeacherStudentAge(student) : null;
+  const studentGender = getTeacherStudentGenderLabel(student?.gender);
+  const studentBirthDate = formatTeacherStudentDate(student?.dateOfBirth);
+  const studentStatus = getTeacherStudentStatusLabel(student?.isActive);
+
   return (
     <Modal
       open={open}
       onClose={onClose}
       eyebrow="Teacher Detail"
-      title={student?.fullName ?? "Student details"}
-      description="Review the stored health and care information for this student. Empty medical fields are shown with a clear fallback."
+      title={studentName ?? "Student details"}
+      description="Review the stored student identity, guardian, status, and health information. Empty fields are shown with a clear fallback."
       className="max-w-3xl"
     >
       <div className="grid gap-5">
         <div className="flex flex-wrap items-center gap-3">
           <Badge variant="primary">Student Record</Badge>
+          <Badge variant={student?.isActive === false ? "muted" : "primary"}>
+            {studentStatus}
+          </Badge>
+          {student?.studentId ? <Badge>Student #{student.studentId}</Badge> : null}
+          {student?.className ? <Badge>{student.className}</Badge> : null}
           {student ? <Badge>ID {student.id.slice(0, 8)}</Badge> : null}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <TeacherStudentDetailField
-            label="Full name"
-            value={student?.fullName}
+            label="Name"
+            value={student?.name}
+            emptyLabel="No name available"
+          />
+          <TeacherStudentDetailField
+            label="Surname"
+            value={student?.surname}
+            emptyLabel="No surname available"
+          />
+          <TeacherStudentDetailField
+            label="Display name"
+            value={studentName}
             emptyLabel="No student name available"
+          />
+          <TeacherStudentDetailField
+            label="Date of birth"
+            value={studentBirthDate}
+            emptyLabel="No birth date recorded"
+          />
+          <TeacherStudentDetailField
+            label="Age"
+            value={studentAge !== null ? String(studentAge) : null}
+            emptyLabel="No age recorded"
+          />
+          <TeacherStudentDetailField
+            label="Gender"
+            value={studentGender}
+            emptyLabel="No gender recorded"
+          />
+          <TeacherStudentDetailField
+            label="Guardian name"
+            value={student?.guardianName}
+            emptyLabel="No guardian name recorded"
+          />
+          <TeacherStudentDetailField
+            label="Guardian contact phone"
+            value={student?.guardianContactPhone}
+            emptyLabel="No guardian contact phone recorded"
+          />
+          <TeacherStudentDetailField
+            label="Class"
+            value={student?.className}
+            emptyLabel="No class name recorded"
           />
           <TeacherStudentDetailField
             label="Allergies"
@@ -54,6 +112,12 @@ export function TeacherStudentDetailModal({
             emptyLabel="No medications recorded"
           />
         </div>
+
+        <TeacherStudentDetailField
+          label="Health information"
+          value={student?.healthInfo}
+          emptyLabel="No health information recorded"
+        />
 
         <TeacherStudentDetailField
           label="Medical notes"

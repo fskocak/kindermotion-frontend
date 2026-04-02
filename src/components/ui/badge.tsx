@@ -8,9 +8,8 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        muted:
-          "bg-[rgba(255,255,255,0.68)] text-[var(--on-surface-variant)]",
-        primary: "bg-[rgba(14,165,233,0.1)] text-[var(--primary)]",
+        muted: "bg-[var(--surface-container)] text-[var(--on-surface-variant)]",
+        primary: "bg-[var(--primary-soft)] text-[var(--primary)]",
       },
     },
     defaultVariants: {

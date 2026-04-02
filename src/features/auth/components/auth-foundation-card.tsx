@@ -29,40 +29,49 @@ export function AuthFoundationCard() {
   return (
     <ArchitectureCard
       title="Auth and API Foundation"
-      description="The shared Axios instance is configured, and auth requests are separated into the service layer to match the backend endpoints."
+      description="The authentication client acts as the central mechanism for verifying sign in sessions."
     >
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl bg-slate-50 p-5">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+        <div className="rounded-2xl border border-[var(--panel-border)] bg-[var(--surface-container-low)] p-5">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-[var(--on-surface-variant)]">
             Endpoints
           </h3>
-          <ul className="space-y-2 text-sm text-slate-700">
+          <ul className="space-y-2 text-sm text-[var(--on-surface)]">
             {authEndpoints.map((endpoint) => (
-              <li key={endpoint} className="rounded-xl bg-white px-3 py-2">
+              <li
+                key={endpoint}
+                className="rounded-xl border border-[var(--panel-border)] bg-[var(--surface-container-lowest)] px-3 py-2"
+              >
                 {endpoint}
               </li>
             ))}
           </ul>
         </div>
-        <div className="rounded-2xl bg-slate-50 p-5">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+        <div className="rounded-2xl border border-[var(--panel-border)] bg-[var(--surface-container-low)] p-5">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-[var(--on-surface-variant)]">
             Folders
           </h3>
-          <ul className="space-y-2 text-sm text-slate-700">
+          <ul className="space-y-2 text-sm text-[var(--on-surface)]">
             {appFolders.map((folder) => (
-              <li key={folder} className="rounded-xl bg-white px-3 py-2">
+              <li
+                key={folder}
+                className="rounded-xl border border-[var(--panel-border)] bg-[var(--surface-container-lowest)] px-3 py-2"
+              >
                 {folder}
               </li>
             ))}
           </ul>
         </div>
-        <div className="rounded-2xl bg-slate-50 p-5">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+        <div className="rounded-2xl border border-[var(--panel-border)] bg-[var(--surface-container-low)] p-5">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-[var(--on-surface-variant)]">
             Next Steps
           </h3>
-          <ul className="space-y-2 text-sm text-slate-700">
+          <ul className="space-y-2 text-sm text-[var(--on-surface)]">
             {nextSteps.map((item) => (
-              <li key={item} className="rounded-xl bg-white px-3 py-2">
+              <li
+                key={item}
+                className="rounded-xl border border-[var(--panel-border)] bg-[var(--surface-container-lowest)] px-3 py-2"
+              >
                 {item}
               </li>
             ))}

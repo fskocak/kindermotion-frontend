@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
@@ -12,18 +12,29 @@ import {
   teacherStudentFormSchema,
   type TeacherStudentFormValues,
 } from "@/features/teacher/schemas/student-form-schema";
+import { buildTeacherStudentMutationPayload } from "@/features/teacher/student-utils";
 import { getApiErrorMessage } from "@/lib/http/get-api-error-message";
 import { teacherService } from "@/services";
 
 type TeacherStudentCreateModalProps = {
   open: boolean;
   classId: string;
+  className?: string;
   onClose: () => void;
   onSuccess: () => Promise<void> | void;
 };
 
 const EMPTY_FORM_VALUES: TeacherStudentFormValues = {
-  fullName: "",
+  studentId: "",
+  name: "",
+  surname: "",
+  dateOfBirth: "",
+  age: "",
+  gender: "UNSPECIFIED",
+  healthInfo: "",
+  guardianName: "",
+  guardianContactPhone: "",
+  isActive: "ACTIVE",
   allergies: "",
   conditions: "",
   medications: "",
@@ -33,6 +44,7 @@ const EMPTY_FORM_VALUES: TeacherStudentFormValues = {
 export function TeacherStudentCreateModal({
   open,
   classId,
+  className,
   onClose,
   onSuccess,
 }: TeacherStudentCreateModalProps) {
@@ -43,13 +55,25 @@ export function TeacherStudentCreateModal({
     defaultValues: EMPTY_FORM_VALUES,
   });
 
+  useEffect(() => {
+    if (!open) {
+      form.reset(EMPTY_FORM_VALUES);
+    }
+  }, [form, open]);
+
+  function handleClose() {
+    setFeedback(null);
+    form.reset(EMPTY_FORM_VALUES);
+    onClose();
+  }
+
   async function onSubmit(values: TeacherStudentFormValues) {
     setFeedback(null);
 
     try {
       await teacherService.createStudent({
         classId,
-        ...values,
+        ...buildTeacherStudentMutationPayload(values),
       });
       await onSuccess();
       form.reset(EMPTY_FORM_VALUES);
@@ -62,15 +86,16 @@ export function TeacherStudentCreateModal({
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       eyebrow="Teacher Action"
       title="Add student"
-      description="Create a new student for this class using the teacher-scoped student flow."
+      description="Create a new student record for this class with the updated identity, guardian, status, and health fields."
       className="max-w-3xl"
     >
-      <form className="grid gap-5" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
         <TeacherStudentFormFields
           idPrefix="create-student"
+          className={className}
           register={form.register}
           errors={form.formState.errors}
         />
@@ -78,7 +103,7 @@ export function TeacherStudentCreateModal({
         {feedback ? <MutationFeedback message={feedback} /> : null}
 
         <FormActions
-          onCancel={onClose}
+          onCancel={handleClose}
           submitLabel="Create student"
           submittingLabel="Creating..."
           isSubmitting={form.formState.isSubmitting}

@@ -155,17 +155,11 @@ export function TeacherClassStudentsPage({
     <DashboardPage
       eyebrow="Teacher / Class Students"
       title={classContext?.name ?? "Class students"}
-      description={
-        classContext
-          ? `Review and maintain the students for ${classContext.name}. This screen only consumes teacher-owned classroom data from the protected API.`
-          : "Review and maintain the students for a selected class from your teacher-owned classroom list."
-      }
     >
       <div className="grid gap-6">
         <DashboardSectionCard
           eyebrow="Navigation"
           title="Back to your classes"
-          description="Return to the teacher class list or reload the current class students view."
           actions={
             <div className="flex flex-wrap gap-3">
               <Button asChild variant="outline" size="sm">
@@ -195,7 +189,6 @@ export function TeacherClassStudentsPage({
         <DashboardSectionCard
           eyebrow="Students"
           title="Class students"
-          description="Review student records, search within the class roster, and update care information for this teacher-owned class."
           actions={
             <Button
               type="button"
@@ -214,7 +207,7 @@ export function TeacherClassStudentsPage({
               <Input
                 id="student-search"
                 type="search"
-                placeholder="Search by student full name"
+                placeholder="Search by student name"
                 value={searchInput}
                 onChange={(event) => {
                   setSearchInput(event.target.value);
@@ -329,9 +322,9 @@ export function TeacherClassStudentsPage({
       </div>
 
       <TeacherStudentCreateModal
-        key={createModalOpen ? "create-open" : "create-closed"}
         open={createModalOpen}
         classId={classId}
+        className={classContext?.name}
         onClose={() => {
           setCreateModalOpen(false);
         }}
@@ -343,9 +336,6 @@ export function TeacherClassStudentsPage({
       />
 
       <TeacherStudentDetailModal
-        key={
-          selectedStudent ? `${selectedStudent.id}-${detailModalOpen}` : "detail-empty"
-        }
         open={detailModalOpen}
         student={selectedStudent}
         onClose={() => {
@@ -355,9 +345,9 @@ export function TeacherClassStudentsPage({
       />
 
       <TeacherStudentEditModal
-        key={selectedStudent ? `${selectedStudent.id}-${editModalOpen}` : "edit-empty"}
         open={editModalOpen}
         student={selectedStudent}
+        className={classContext?.name}
         onClose={() => {
           setEditModalOpen(false);
           setSelectedStudent(null);
@@ -370,9 +360,6 @@ export function TeacherClassStudentsPage({
       />
 
       <TeacherStudentDeleteModal
-        key={
-          selectedStudent ? `${selectedStudent.id}-${deleteModalOpen}` : "delete-empty"
-        }
         open={deleteModalOpen}
         student={selectedStudent}
         onClose={() => {

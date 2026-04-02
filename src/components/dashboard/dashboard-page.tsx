@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 type DashboardPageProps = {
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
   children: ReactNode;
 };
 
@@ -20,9 +20,11 @@ export function DashboardPage({
         <h2 className="max-w-3xl text-3xl font-semibold tracking-[-0.03em] text-[var(--on-surface)] sm:text-4xl">
           {title}
         </h2>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--on-surface-variant)]">
-          {description}
-        </p>
+        {description ? (
+          <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--on-surface-variant)]">
+            {description}
+          </p>
+        ) : null}
       </section>
       {children}
     </div>

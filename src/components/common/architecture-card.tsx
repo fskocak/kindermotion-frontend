@@ -12,12 +12,12 @@ export function ArchitectureCard({
   children,
 }: ArchitectureCardProps) {
   return (
-    <section className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-8">
+    <section className="km-panel rounded-[1.75rem] p-6 sm:p-8">
       <div className="mb-6 flex flex-col gap-2">
-        <h2 className="text-xl font-semibold tracking-tight text-slate-950">
+        <h2 className="text-xl font-semibold tracking-tight text-[var(--on-surface)]">
           {title}
         </h2>
-        <p className="text-sm leading-6 text-slate-600 sm:text-base">
+        <p className="text-sm leading-6 text-[var(--on-surface-variant)] sm:text-base">
           {description}
         </p>
       </div>

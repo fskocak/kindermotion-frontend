@@ -194,13 +194,11 @@ export function AdminClassesPageContent() {
     <DashboardPage
       eyebrow="Admin / Classes"
       title="Keep class structures organized in one operational surface."
-      description="This MVP screen lets admins review classes, assign a teacher when creating one, and keep the class list aligned with backend state."
     >
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <DashboardSectionCard
           eyebrow="Class Directory"
           title="Classes"
-          description="Current classes powered by backend search, optional teacher filtering, and pagination."
           actions={
             <Button
               type="button"
@@ -364,7 +362,6 @@ export function AdminClassesPageContent() {
         <DashboardSectionCard
           eyebrow="Create Class"
           title="Add a new class"
-          description="Class creation is wired to the existing admin endpoint and uses teacher selection from the current teacher list."
         >
           <form className="grid gap-5" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid gap-2">
@@ -401,7 +398,7 @@ export function AdminClassesPageContent() {
             {teachers.length === 0 && !isLoading && !listError ? (
               <DashboardEmptyState
                 title="No teachers available"
-                description="Create at least one teacher before creating a class, because the backend requires a teacherId for class creation."
+                description="Create at least one teacher before creating a class."
               />
             ) : null}
 

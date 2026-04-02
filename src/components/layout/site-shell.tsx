@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BrandMark } from "@/components/common/brand-mark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/theme/theme-toggle";
 
 type SiteShellProps = {
   title: string;
@@ -28,6 +29,7 @@ export function SiteShell({
         <header className="km-glass flex flex-col gap-5 rounded-[2rem] px-5 py-5 sm:px-7 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
           <BrandMark />
           <div className="flex flex-wrap items-center gap-3">
+            <ThemeToggle />
             <Button asChild variant="ghost" size="sm">
               <Link href="/">Home</Link>
             </Button>

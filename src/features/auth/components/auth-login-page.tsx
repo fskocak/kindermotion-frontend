@@ -8,28 +8,18 @@ type AuthLoginPageProps = {
 const authPageContent = {
   admin: {
     eyebrow: "Administrative Access",
-    title: "Manage your administrative workflows with clarity, calm, and control.",
+    title: "Secure admin access for managing KinderMotion.",
     description:
-      "After admin sign-in, the JWT is stored, `/auth/me` restores the session, and the user is redirected into the admin flow.",
-    highlights: [
-      "All auth requests go through the shared service layer.",
-      "State management stays simple and scalable with Zustand.",
-      "The form experience is validated with React Hook Form and Zod.",
-    ],
+      "Sign in to access the administrative dashboard.",
     formTitle: "Admin login",
     formDescription:
       "Enter your account details to access the administrative workspace.",
   },
   teacher: {
     eyebrow: "Teacher Workspace",
-    title: "Give the teacher flow the same calm, intentional, and fast experience.",
+    title: "A calm and intentional space for your classroom.",
     description:
-      "The teacher login uses the same session restore flow as admin; only the destination route and role-specific experience differ.",
-    highlights: [
-      "The shared login form uses the same component architecture for both roles.",
-      "The token helper and store work together consistently.",
-      "The same theme layer can now be extended into future dashboard screens.",
-    ],
+      "Sign in to access your teacher portal and class assignments.",
     formTitle: "Teacher login",
     formDescription:
       "Sign in with your teacher account to access class and observation workflows.",
@@ -44,7 +34,6 @@ export function AuthLoginPage({ mode }: AuthLoginPageProps) {
       eyebrow={content.eyebrow}
       title={content.title}
       description={content.description}
-      highlights={content.highlights}
     >
       <LoginForm
         mode={mode}

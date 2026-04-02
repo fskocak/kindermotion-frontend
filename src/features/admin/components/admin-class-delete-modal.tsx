@@ -49,7 +49,7 @@ export function AdminClassDeleteModal({
       onConfirm={onDelete}
       eyebrow="Admin Action"
       title="Delete class"
-      description="This action is permanent. If the backend blocks deletion because the class is linked to students or related data, the API error will be shown as-is."
+      description="This action is permanent. If the class is linked to students or related data, it might not be deleted."
       confirmLabel="Delete class"
       confirmLoadingLabel="Deleting..."
       isLoading={isSubmitting}

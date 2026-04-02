@@ -126,12 +126,12 @@ export function LoginForm({ mode, title, description }: LoginFormProps) {
             className={cn(
               "rounded-[1.5rem] bg-[var(--surface-container-low)] px-4 py-3 text-sm text-[var(--on-surface-variant)]",
               submitError
-                ? "bg-[rgba(255,218,214,0.72)] text-[var(--on-error-container)]"
+                ? "bg-[var(--error-container)] text-[var(--on-error-container)]"
                 : "",
             )}
           >
             {submitError ??
-              "After credentials are verified, the token is stored and `/auth/me` restores the session."}
+              "Enter your credentials to securely sign in."}
           </div>
 
           <Button
@@ -155,7 +155,7 @@ export function LoginForm({ mode, title, description }: LoginFormProps) {
           <p className="text-sm text-[var(--on-surface-variant)]">
             {isBootstrapping
               ? "Checking for a saved session..."
-              : "The same theme and auth flow are shared across both roles."}
+              : "Secure access to your professional workspace."}
           </p>
           <Button asChild variant="ghost" size="sm">
             <Link href={modeToAlternateRoute[mode]}>

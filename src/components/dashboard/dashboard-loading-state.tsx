@@ -9,8 +9,8 @@ export function DashboardLoadingState({ label }: DashboardLoadingStateProps) {
         {label}
       </div>
       <div className="grid gap-3">
-        <div className="h-24 animate-pulse rounded-[1.75rem] bg-[rgba(236,238,240,0.92)]" />
-        <div className="h-24 animate-pulse rounded-[1.75rem] bg-[rgba(236,238,240,0.92)]" />
+        <div className="km-skeleton h-24 animate-pulse rounded-[1.75rem]" />
+        <div className="km-skeleton h-24 animate-pulse rounded-[1.75rem]" />
       </div>
     </div>
   );

@@ -5,18 +5,18 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold tracking-tight transition-transform duration-200 hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(14,165,233,0.18)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold tracking-tight transition-transform duration-200 hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--focus-ring)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "km-gradient text-white shadow-[0_16px_36px_rgba(0,101,145,0.18)]",
+          "km-gradient text-[var(--button-foreground)] shadow-[var(--shadow-button)]",
         secondary:
           "bg-[var(--surface-container-low)] text-[var(--on-surface)]",
         ghost:
-          "bg-transparent text-[var(--on-surface-variant)] hover:bg-white/50",
+          "bg-transparent text-[var(--on-surface-variant)] hover:bg-[var(--hover-overlay)]",
         outline:
-          "bg-[var(--surface-container-lowest)] text-[var(--on-surface)] ring-1 ring-[rgba(190,200,210,0.4)]",
+          "bg-[var(--surface-container-lowest)] text-[var(--on-surface)] ring-1 ring-[var(--panel-border)]",
       },
       size: {
         default: "h-12 px-6 py-3",
