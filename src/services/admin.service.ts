@@ -6,10 +6,13 @@ import type {
   AdminClass,
   AdminClassListParams,
   AdminLog,
+  AdminMonitoringConfig,
   AdminTeacher,
   AdminTeacherListParams,
+  CreateAdminMonitoringConfigPayload,
   CreateClassPayload,
   CreateTeacherPayload,
+  UpdateAdminMonitoringConfigPayload,
   UpdateClassPayload,
   UpdateTeacherPayload,
 } from "@/types/admin";
@@ -82,6 +85,32 @@ export const adminService = {
   },
   async listLogs() {
     const response = await httpClient.get<AdminLog[]>(API_ROUTES.admin.logs);
+
+    return response.data;
+  },
+  async listMonitoringConfigs() {
+    const response = await httpClient.get<AdminMonitoringConfig[]>(
+      API_ROUTES.admin.monitoringConfigs,
+    );
+
+    return response.data;
+  },
+  async createMonitoringConfig(payload: CreateAdminMonitoringConfigPayload) {
+    const response = await httpClient.post<AdminMonitoringConfig>(
+      API_ROUTES.admin.monitoringConfigs,
+      payload,
+    );
+
+    return response.data;
+  },
+  async updateMonitoringConfig(
+    monitoringConfigId: string,
+    payload: UpdateAdminMonitoringConfigPayload,
+  ) {
+    const response = await httpClient.patch<AdminMonitoringConfig>(
+      `${API_ROUTES.admin.monitoringConfigs}/${monitoringConfigId}`,
+      payload,
+    );
 
     return response.data;
   },
