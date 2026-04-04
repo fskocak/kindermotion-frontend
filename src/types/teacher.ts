@@ -99,3 +99,83 @@ export type TeacherStudentListParams = {
 export type TeacherClassStudentsResponse = PaginatedResponse<TeacherStudent> & {
   class: TeacherClass;
 };
+
+export type TeacherMonitoringConfig = {
+  id: string;
+  classroomId: string;
+  isEnabled: boolean;
+  distanceAlertsEnabled: boolean;
+  motionSummaryEnabled: boolean;
+  recordingEnabled: boolean;
+  snapshotEnabled: boolean;
+  proximityThresholdCm: number;
+  updatedByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type UpdateTeacherMonitoringConfigPayload = {
+  isEnabled: boolean;
+  distanceAlertsEnabled: boolean;
+  motionSummaryEnabled: boolean;
+  recordingEnabled: boolean;
+  snapshotEnabled: boolean;
+  proximityThresholdCm: number;
+};
+
+export type TeacherAlertStatus = "ACTIVE" | "ACKNOWLEDGED" | "DISMISSED";
+
+export type TeacherAlert = {
+  id: string;
+  classroomId: string;
+  cameraId: string;
+  severity: string;
+  metricType: string;
+  startedAt: string;
+  endedAt: string;
+  distanceScore: number | null;
+  durationMs: number | null;
+  status: TeacherAlertStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TeacherAlertsListParams = {
+  status?: TeacherAlertStatus;
+  limit?: number;
+};
+
+export type TeacherAlertAcknowledgeResponse = {
+  id: string;
+  status: TeacherAlertStatus;
+  updatedAt: string;
+};
+
+export type TeacherRecordingAssetAccess = {
+  previewUrl: string | null;
+  downloadUrl: string | null;
+  expiresAt: string | null;
+};
+
+export type TeacherRecordingSnapshot = {
+  id: string;
+  status: string;
+  capturedAt: string;
+  createdAt: string;
+  access?: TeacherRecordingAssetAccess | null;
+};
+
+export type TeacherRecording = {
+  id: string;
+  classroomId: string;
+  cameraId: string;
+  status: string;
+  startedAt: string;
+  endedAt: string;
+  durationMs: number | null;
+  createdAt: string;
+  updatedAt: string;
+  assetStatus: string | null;
+  access?: TeacherRecordingAssetAccess | null;
+  snapshot?: TeacherRecordingSnapshot | null;
+};

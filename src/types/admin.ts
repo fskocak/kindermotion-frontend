@@ -53,6 +53,33 @@ export type AdminClassListParams = {
   teacherId?: string;
 };
 
+export type AdminMonitoringConfig = {
+  id: string;
+  classroomId: string;
+  isEnabled: boolean;
+  distanceAlertsEnabled: boolean;
+  motionSummaryEnabled: boolean;
+  recordingEnabled: boolean;
+  snapshotEnabled: boolean;
+  proximityThresholdCm: number;
+  updatedByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateAdminMonitoringConfigPayload = {
+  classroomId: string;
+  isEnabled: boolean;
+  distanceAlertsEnabled: boolean;
+  motionSummaryEnabled: boolean;
+  recordingEnabled: boolean;
+  snapshotEnabled: boolean;
+  proximityThresholdCm: number;
+};
+
+export type UpdateAdminMonitoringConfigPayload =
+  CreateAdminMonitoringConfigPayload;
+
 export type AdminLogAdmin = {
   id: string;
   email: string;

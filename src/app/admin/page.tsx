@@ -37,6 +37,11 @@ export default function AdminPage() {
               <Button asChild variant="secondary">
                 <Link href={APP_ROUTES.adminClasses}>Manage Classes</Link>
               </Button>
+              <Button asChild variant="outline">
+                <Link href={APP_ROUTES.adminMonitoringConfigs}>
+                  Monitoring Configs
+                </Link>
+              </Button>
             </div>
           </div>
         </DashboardSectionCard>

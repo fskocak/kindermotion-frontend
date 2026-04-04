@@ -8,9 +8,14 @@ export const API_ROUTES = {
     teachers: "/admin/teachers",
     classes: "/admin/classes",
     logs: "/admin/logs",
+    monitoringConfigs: "/admin/monitoring-configs",
   },
   teacher: {
     myClasses: "/teacher/classes/me",
     students: "/teacher/students",
+    monitoringConfig: "/teacher/monitoring-config",
+    alerts: "/teacher/alerts",
+    recordings: "/teacher/recordings",
+    snapshots: "/teacher/snapshots",
   },
 } as const;
