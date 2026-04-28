@@ -13,6 +13,7 @@ import type {
   TeacherRecordingAssetAccess,
   TeacherCameraRecordingResponse,
   TeacherRecording,
+  TeacherRecordingsListParams,
   TeacherStudentListParams,
   TeacherStudent,
   UpdateTeacherStudentPayload,
@@ -104,9 +105,16 @@ export const teacherService = {
 
     return response.data;
   },
-  async getRecordings() {
+  async getRecordings(params: TeacherRecordingsListParams = {}) {
     const response = await httpClient.get<TeacherRecording[]>(
       API_ROUTES.teacher.recordings,
+      {
+        params: {
+          classId: params.classId,
+          date: params.date,
+          limit: params.limit,
+        },
+      },
     );
 
     return response.data;

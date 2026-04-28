@@ -151,6 +151,12 @@ export type TeacherAlertAcknowledgeResponse = {
   updatedAt: string;
 };
 
+export type TeacherRecordingsListParams = {
+  classId?: string;
+  date?: string;
+  limit?: number;
+};
+
 export type TeacherRecordingAssetAccess = {
   previewUrl: string | null;
   downloadUrl: string | null;

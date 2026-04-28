@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { LoginCameraTest } from "@/features/auth/components/login-camera-test";
 import { APP_ROUTES } from "@/lib/constants/routes";
 
 export default function Home() {
@@ -29,6 +30,7 @@ export default function Home() {
           <Button asChild variant="outline" size="lg">
             <Link href={APP_ROUTES.teacherLogin}>Go to teacher login</Link>
           </Button>
+          <LoginCameraTest />
         </>
       }
     >
