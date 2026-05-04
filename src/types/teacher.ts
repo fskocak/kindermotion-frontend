@@ -61,6 +61,30 @@ export type TeacherStudentProfileResponse = {
   student: TeacherStudent;
   activities: TeacherStudentActivity[];
   milestones: TeacherStudentMilestone[];
+  reports: TeacherStudentReport[];
+};
+
+export type TeacherStudentReport = {
+  jobId: string;
+  runId: string | null;
+  status: string;
+  trackId: number;
+  createdAt: string;
+  updatedAt: string;
+  recordingStartedAt: string;
+  recordingEndedAt: string;
+  reportAsset: TeacherRecordingAsset | null;
+};
+
+export type TeacherStudentReportMetric = {
+  date: string;
+  totalDurationSeconds: number;
+  sittingSeconds: number;
+  standingSeconds: number;
+  walkingSeconds: number;
+  handRaisedSeconds: number;
+  clappingSeconds: number;
+  handArmMovementSeconds: number;
 };
 
 export type TeacherStudentMutationFields = {
@@ -163,6 +187,33 @@ export type TeacherRecordingAssetAccess = {
   expiresAt: string | null;
 };
 
+export type TeacherRecordingAsset = {
+  id: string;
+  assetType: string;
+  status: string;
+  contentType: string | null;
+};
+
+export type TeacherMlTrackMapping = {
+  id: string;
+  trackId: number;
+  studentId: string;
+};
+
+export type TeacherMlProcessingJob = {
+  id: string;
+  status: string;
+  runId: string | null;
+  trackIds: number[];
+  errorMessage: string | null;
+  createdAt: string;
+  updatedAt: string;
+  processedVideoAsset: TeacherRecordingAsset | null;
+  reportAsset: TeacherRecordingAsset | null;
+  predictionCsvAsset: TeacherRecordingAsset | null;
+  mappings: TeacherMlTrackMapping[];
+};
+
 export type TeacherRecordingSnapshot = {
   id: string;
   status: string;
@@ -184,10 +235,12 @@ export type TeacherRecording = {
   assetStatus: string | null;
   access?: TeacherRecordingAssetAccess | null;
   snapshot?: TeacherRecordingSnapshot | null;
+  mlJob?: TeacherMlProcessingJob | null;
 };
 
 export type TeacherCameraRecordingResponse = {
   recording: {
+    recordingKey: string;
     objectKey: string;
     mediaUrl: string;
     sizeBytes: number;
@@ -207,4 +260,59 @@ export type TeacherCameraRecordingResponse = {
     };
     targetUrl: string;
   };
+};
+
+export type TeacherMlStoredArtifact = {
+  objectKey: string;
+  mediaUrl: string;
+  sizeBytes: number;
+  sha256: string;
+  contentType: string;
+  storageProvider: string;
+  bucket: string | null;
+};
+
+export type TeacherMlRoiBox = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+export type TeacherMlVideoInitResponse = {
+  recording: TeacherCameraRecordingResponse["recording"];
+  publish: TeacherCameraRecordingResponse["publish"];
+  firstFrame: TeacherMlStoredArtifact;
+  frameWidth: number;
+  frameHeight: number;
+};
+
+export type TeacherMlVideoUploadResponse = {
+  recording: TeacherCameraRecordingResponse["recording"];
+  publish: TeacherCameraRecordingResponse["publish"];
+  runId: string;
+  status: string;
+  trackIds: number[];
+  artifacts: {
+    processedVideo: TeacherMlStoredArtifact | null;
+    reportPdf: TeacherMlStoredArtifact | null;
+    predictionCsv: TeacherMlStoredArtifact | null;
+  };
+  errorMessage: string | null;
+};
+
+export type CreateTeacherMlProcessingJobPayload = {
+  recordingKey: string;
+  runId: string;
+  status: string;
+  trackIds: number[];
+  artifacts: TeacherMlVideoUploadResponse["artifacts"];
+  errorMessage?: string | null;
+};
+
+export type UpdateTeacherMlTrackMappingsPayload = {
+  mappings: Array<{
+    trackId: number;
+    studentId: string;
+  }>;
 };
