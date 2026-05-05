@@ -14,6 +14,7 @@ import { useToast } from "@/components/providers/toast-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TeacherMlUploadCard } from "@/features/teacher/components/teacher-ml-upload-card";
 import { TeacherStudentCard } from "@/features/teacher/components/teacher-student-card";
 import { TeacherStudentCreateModal } from "@/features/teacher/components/teacher-student-create-modal";
 import { TeacherStudentDeleteModal } from "@/features/teacher/components/teacher-student-delete-modal";
@@ -423,6 +424,8 @@ export function TeacherClassStudentsPage({
             </div>
           </div>
         </DashboardSectionCard>
+
+        <TeacherMlUploadCard classId={classId} />
 
         <DashboardSectionCard
           eyebrow="Students"

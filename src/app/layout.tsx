@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AuthBootstrapper } from "@/components/providers/auth-bootstrapper";
+import { MlProcessingProvider } from "@/components/providers/ml-processing-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { ThemeScript } from "@/theme/theme-script";
 import "@/theme/index.css";
@@ -27,8 +28,10 @@ export default function RootLayout({
       <body className="min-h-full font-sans text-foreground">
         <ThemeScript />
         <ToastProvider>
-          <AuthBootstrapper />
-          {children}
+          <MlProcessingProvider>
+            <AuthBootstrapper />
+            {children}
+          </MlProcessingProvider>
         </ToastProvider>
       </body>
     </html>
