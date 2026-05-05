@@ -21,6 +21,8 @@ import type {
   TeacherStudentProfileResponse,
   TeacherMlVideoInitResponse,
   TeacherMlVideoUploadResponse,
+  TeacherMlLiveSessionChunkResponse,
+  TeacherMlLiveSessionStartResponse,
   TeacherMlRoiBox,
   CreateTeacherMlProcessingJobPayload,
   TeacherMlProcessingJob,
@@ -226,6 +228,99 @@ export const teacherService = {
       {
         recordingKey,
         objectKey,
+        rois,
+        pairWatchTrackIds,
+      },
+      {
+        timeout: 0,
+      },
+    );
+
+    return response.data;
+  },
+  async startLiveMlSession({ firstFrame }: { firstFrame: Blob }) {
+    const formData = new FormData();
+    formData.append("firstFrame", firstFrame, "first-frame.png");
+
+    const response = await httpClient.post<TeacherMlLiveSessionStartResponse>(
+      `${env.trainingApiBaseUrl}/camera/live-session/start`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 0,
+      },
+    );
+
+    return response.data;
+  },
+  async uploadLiveMlChunk({
+    sessionId,
+    sequence,
+    blob,
+  }: {
+    sessionId: string;
+    sequence: number;
+    blob: Blob;
+  }) {
+    const formData = new FormData();
+    formData.append("file", blob, `chunk-${sequence}.webm`);
+    formData.append("sequence", String(sequence));
+
+    const response = await httpClient.post<TeacherMlLiveSessionChunkResponse>(
+      `${env.trainingApiBaseUrl}/camera/live-session/${sessionId}/chunk`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 0,
+      },
+    );
+
+    return response.data;
+  },
+  async configureLiveMlSession({
+    sessionId,
+    rois,
+    pairWatchTrackIds,
+  }: {
+    sessionId: string;
+    rois: TeacherMlRoiBox[];
+    pairWatchTrackIds?: number[];
+  }) {
+    const response = await httpClient.post<{ success: boolean }>(
+      `${env.trainingApiBaseUrl}/camera/live-session/${sessionId}/configure`,
+      {
+        rois,
+        pairWatchTrackIds,
+      },
+      {
+        timeout: 0,
+      },
+    );
+
+    return response.data;
+  },
+  async finalizeLiveMlSession({
+    sessionId,
+    startedAt,
+    endedAt,
+    rois,
+    pairWatchTrackIds,
+  }: {
+    sessionId: string;
+    startedAt: string;
+    endedAt: string;
+    rois: TeacherMlRoiBox[];
+    pairWatchTrackIds?: number[];
+  }) {
+    const response = await httpClient.post<TeacherMlVideoUploadResponse>(
+      `${env.trainingApiBaseUrl}/camera/live-session/${sessionId}/finalize`,
+      {
+        startedAt,
+        endedAt,
         rois,
         pairWatchTrackIds,
       },

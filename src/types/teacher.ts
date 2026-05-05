@@ -301,6 +301,19 @@ export type TeacherMlVideoUploadResponse = {
   errorMessage: string | null;
 };
 
+export type TeacherMlLiveSessionStartResponse = {
+  sessionId: string;
+  firstFrame: TeacherMlStoredArtifact;
+  frameWidth: number;
+  frameHeight: number;
+};
+
+export type TeacherMlLiveSessionChunkResponse = {
+  sessionId: string;
+  sequence: number;
+  sizeBytes: number;
+};
+
 export type CreateTeacherMlProcessingJobPayload = {
   recordingKey: string;
   runId: string;
