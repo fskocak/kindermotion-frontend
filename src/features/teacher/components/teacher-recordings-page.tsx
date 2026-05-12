@@ -16,11 +16,18 @@ import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { DashboardSectionCard } from "@/components/dashboard/dashboard-section-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { MutationFeedback } from "@/components/ui/mutation-feedback";
+import { Select } from "@/components/ui/select";
 import { formatDateTime } from "@/lib/format/date-time";
 import { getApiErrorMessage } from "@/lib/http/get-api-error-message";
 import { teacherService } from "@/services";
-import type { TeacherRecording, TeacherRecordingAssetAccess } from "@/types/teacher";
+import type {
+  TeacherClass,
+  TeacherRecording,
+  TeacherRecordingAssetAccess,
+} from "@/types/teacher";
 
 function formatDuration(durationMs: number | null) {
   if (durationMs === null) {
@@ -52,6 +59,21 @@ function getRecordingsErrorMessage(error: unknown) {
   }
 
   return getApiErrorMessage(error);
+}
+
+function openAssetUrl(url: string, action: AssetActionKind) {
+  if (action === "preview") {
+    window.open(url, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "";
+  link.rel = "noopener noreferrer";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
 }
 
 type AssetActionKind = "preview" | "download";
@@ -272,6 +294,9 @@ function RecordingCard({
 }
 
 export function TeacherRecordingsPageContent() {
+  const [classes, setClasses] = useState<TeacherClass[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
   const [recordings, setRecordings] = useState<TeacherRecording[]>([]);
   const [recordingAccessStates, setRecordingAccessStates] = useState<
     Record<string, AssetAccessState>
@@ -280,10 +305,22 @@ export function TeacherRecordingsPageContent() {
     Record<string, AssetAccessState>
   >({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingClasses, setIsLoadingClasses] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  const selectedClass = classes.find((classItem) => classItem.id === selectedClassId);
+
   const loadRecordings = useCallback(async (background = false) => {
+    if (!selectedClassId) {
+      setRecordings([]);
+      setRecordingAccessStates({});
+      setSnapshotAccessStates({});
+      setIsLoading(false);
+      setIsRefreshing(false);
+      return;
+    }
+
     if (background) {
       setIsRefreshing(true);
     } else {
@@ -292,7 +329,10 @@ export function TeacherRecordingsPageContent() {
 
     try {
       setLoadError(null);
-      const response = await teacherService.getRecordings();
+      const response = await teacherService.getRecordings({
+        classId: selectedClassId,
+        date: selectedDate || undefined,
+      });
       setRecordings(response);
       setRecordingAccessStates({});
       setSnapshotAccessStates({});
@@ -302,11 +342,45 @@ export function TeacherRecordingsPageContent() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
+  }, [selectedClassId, selectedDate]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadClasses() {
+      try {
+        setLoadError(null);
+        const response = await teacherService.listMyClasses();
+
+        if (!isActive) {
+          return;
+        }
+
+        setClasses(response);
+      } catch (error) {
+        if (isActive) {
+          setLoadError(getApiErrorMessage(error));
+        }
+      } finally {
+        if (isActive) {
+          setIsLoadingClasses(false);
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadClasses();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   useEffect(() => {
-    void loadRecordings();
-  }, [loadRecordings]);
+    if (!isLoadingClasses) {
+      void loadRecordings();
+    }
+  }, [isLoadingClasses, loadRecordings]);
 
   async function requestAccess(
     kind: "recording" | "snapshot",
@@ -325,7 +399,7 @@ export function TeacherRecordingsPageContent() {
         action === "preview" ? currentAccess.previewUrl : currentAccess.downloadUrl;
 
       if (directUrl) {
-        window.open(directUrl, "_blank", "noopener,noreferrer");
+        openAssetUrl(directUrl, action);
         return;
       }
     }
@@ -361,7 +435,7 @@ export function TeacherRecordingsPageContent() {
       }));
 
       if (requestedUrl) {
-        window.open(requestedUrl, "_blank", "noopener,noreferrer");
+        openAssetUrl(requestedUrl, action);
       }
     } catch (error) {
       stateSetter((current) => ({
@@ -375,7 +449,7 @@ export function TeacherRecordingsPageContent() {
     }
   }
 
-  if (isLoading) {
+  if (isLoading || isLoadingClasses) {
     return (
       <DashboardPage
         eyebrow="Teacher / Recordings"
@@ -419,26 +493,75 @@ export function TeacherRecordingsPageContent() {
       description="Review recording and snapshot results exposed by the backend."
     >
       <DashboardSectionCard
-        eyebrow="Teacher media"
-        title="Recording results"
-        description="This screen stays backend-first: metadata comes from the API, and preview/download only activate when the backend provides secure access."
+        eyebrow="Filters"
+        title="Choose classroom and date"
+        description="Recordings are loaded only for the selected classroom. The API also verifies the classroom belongs to the signed-in teacher."
         actions={
           <Button
             type="button"
             variant="secondary"
             size="sm"
             onClick={() => void loadRecordings(true)}
-            disabled={isRefreshing}
+            disabled={isRefreshing || !selectedClassId}
           >
             <RefreshCcw className={isRefreshing ? "animate-spin" : ""} />
             Refresh
           </Button>
         }
       >
+        <div className="grid gap-4 rounded-[1.5rem] bg-[var(--surface-container-low)] p-4 md:grid-cols-[minmax(0,1.3fr)_minmax(180px,0.7fr)]">
+          <div className="grid gap-2">
+            <Label htmlFor="recordings-classroom-filter">Classroom</Label>
+            <Select
+              id="recordings-classroom-filter"
+              value={selectedClassId}
+              onChange={(event) => {
+                setSelectedClassId(event.target.value);
+              }}
+            >
+              <option value="">Select classroom</option>
+              {classes.map((classItem) => (
+                <option key={classItem.id} value={classItem.id}>
+                  {classItem.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="recordings-date-filter">Date</Label>
+            <Input
+              id="recordings-date-filter"
+              type="date"
+              value={selectedDate}
+              disabled={!selectedClassId}
+              onChange={(event) => {
+                setSelectedDate(event.target.value);
+              }}
+            />
+          </div>
+        </div>
+
+        {!selectedClassId ? (
+          <div className="mt-4">
+            <DashboardEmptyState
+              title="Select a classroom"
+              description="Choose one of your classrooms first, then optionally narrow the recordings by date."
+            />
+          </div>
+        ) : null}
+      </DashboardSectionCard>
+
+      {selectedClassId ? (
+        <DashboardSectionCard
+          eyebrow="Teacher media"
+          title={selectedClass ? `${selectedClass.name} recordings` : "Recording results"}
+          description="Metadata comes from the API, and preview/download only activate when the backend provides secure access."
+        >
         {recordings.length === 0 ? (
           <DashboardEmptyState
             title="No recordings found"
-            description="No recording or snapshot results have been exposed to the teacher view yet."
+            description="No recordings match the selected classroom and date."
           />
         ) : (
           <div className="space-y-4">
@@ -469,7 +592,8 @@ export function TeacherRecordingsPageContent() {
             ))}
           </div>
         )}
-      </DashboardSectionCard>
+        </DashboardSectionCard>
+      ) : null}
     </DashboardPage>
   );
 }
