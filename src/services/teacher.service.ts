@@ -1,4 +1,5 @@
 import { API_ROUTES } from "@/lib/constants/api-routes";
+import { env } from "@/lib/config/env";
 import { getPaginationQueryParams } from "@/lib/http/get-pagination-query-params";
 import { httpClient } from "@/lib/http/http-client";
 import type {
@@ -10,7 +11,9 @@ import type {
   TeacherClassStudentsResponse,
   TeacherMonitoringConfig,
   TeacherRecordingAssetAccess,
+  TeacherCameraRecordingResponse,
   TeacherRecording,
+  TeacherRecordingsListParams,
   TeacherStudentListParams,
   TeacherStudent,
   UpdateTeacherStudentPayload,
@@ -102,9 +105,16 @@ export const teacherService = {
 
     return response.data;
   },
-  async getRecordings() {
+  async getRecordings(params: TeacherRecordingsListParams = {}) {
     const response = await httpClient.get<TeacherRecording[]>(
       API_ROUTES.teacher.recordings,
+      {
+        params: {
+          classId: params.classId,
+          date: params.date,
+          limit: params.limit,
+        },
+      },
     );
 
     return response.data;
@@ -119,6 +129,42 @@ export const teacherService = {
   async getSnapshotAccess(id: string) {
     const response = await httpClient.get<TeacherRecordingAssetAccess>(
       `${API_ROUTES.teacher.snapshots}/${id}/access`,
+    );
+
+    return response.data;
+  },
+  async startCameraRecording(durationSeconds = 5) {
+    const response = await httpClient.post<TeacherCameraRecordingResponse>(
+      `${env.trainingApiBaseUrl}/camera/recording`,
+      {
+        durationSeconds,
+      },
+    );
+
+    return response.data;
+  },
+  async uploadBrowserRecording({
+    blob,
+    startedAt,
+    endedAt,
+  }: {
+    blob: Blob;
+    startedAt: string;
+    endedAt: string;
+  }) {
+    const formData = new FormData();
+    formData.append("file", blob, "browser-recording.webm");
+    formData.append("startedAt", startedAt);
+    formData.append("endedAt", endedAt);
+
+    const response = await httpClient.post<TeacherCameraRecordingResponse>(
+      `${env.trainingApiBaseUrl}/camera/browser-recording`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
     );
 
     return response.data;

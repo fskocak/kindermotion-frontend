@@ -151,6 +151,12 @@ export type TeacherAlertAcknowledgeResponse = {
   updatedAt: string;
 };
 
+export type TeacherRecordingsListParams = {
+  classId?: string;
+  date?: string;
+  limit?: number;
+};
+
 export type TeacherRecordingAssetAccess = {
   previewUrl: string | null;
   downloadUrl: string | null;
@@ -178,4 +184,27 @@ export type TeacherRecording = {
   assetStatus: string | null;
   access?: TeacherRecordingAssetAccess | null;
   snapshot?: TeacherRecordingSnapshot | null;
+};
+
+export type TeacherCameraRecordingResponse = {
+  recording: {
+    objectKey: string;
+    mediaUrl: string;
+    sizeBytes: number;
+    sha256: string;
+    durationMs: number;
+  };
+  publish: {
+    published: boolean;
+    eventId: string;
+    eventType: string;
+    backendStatusCode: number;
+    backendResponse: {
+      accepted?: boolean;
+      processingResult?: string;
+      status?: string;
+      [key: string]: unknown;
+    };
+    targetUrl: string;
+  };
 };
