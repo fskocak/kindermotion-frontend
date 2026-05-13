@@ -1,15 +1,24 @@
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
+import { useEffect } from "react";
+import type {
+  FieldErrors,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
+} from "react-hook-form";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { TeacherStudentFormValues } from "@/features/teacher/schemas/student-form-schema";
+import { calculateTeacherStudentAge } from "@/features/teacher/student-utils";
 
 type TeacherStudentFormFieldsProps = {
   idPrefix: string;
   className?: string;
   register: UseFormRegister<TeacherStudentFormValues>;
+  setValue: UseFormSetValue<TeacherStudentFormValues>;
+  watch: UseFormWatch<TeacherStudentFormValues>;
   errors: FieldErrors<TeacherStudentFormValues>;
 };
 
@@ -17,8 +26,21 @@ export function TeacherStudentFormFields({
   idPrefix,
   className,
   register,
+  setValue,
+  watch,
   errors,
 }: TeacherStudentFormFieldsProps) {
+  const dateOfBirth = watch("dateOfBirth");
+  const calculatedAge = calculateTeacherStudentAge(dateOfBirth);
+
+  useEffect(() => {
+    setValue("age", calculatedAge === null ? "" : String(calculatedAge), {
+      shouldDirty: false,
+      shouldTouch: false,
+      shouldValidate: true,
+    });
+  }, [calculatedAge, setValue]);
+
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -55,7 +77,8 @@ export function TeacherStudentFormFields({
           <Input
             id={`${idPrefix}-age`}
             inputMode="numeric"
-            placeholder="Optional age"
+            placeholder="Calculated from date of birth"
+            readOnly
             {...register("age")}
           />
           {errors.age ? (

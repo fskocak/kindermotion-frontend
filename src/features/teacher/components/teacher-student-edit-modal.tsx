@@ -86,6 +86,8 @@ export function TeacherStudentEditModal({
           idPrefix="edit-student"
           className={className}
           register={form.register}
+          setValue={form.setValue}
+          watch={form.watch}
           errors={form.formState.errors}
         />
 

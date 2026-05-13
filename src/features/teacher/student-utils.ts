@@ -5,6 +5,57 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
   dateStyle: "medium",
 });
 
+function parseDateOnly(value: string | null | undefined) {
+  if (!value || value.trim().length === 0) {
+    return null;
+  }
+
+  const [datePart = ""] = value.split("T");
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+
+  if (!match) {
+    return null;
+  }
+
+  const year = Number(match[1]);
+  const monthIndex = Number(match[2]) - 1;
+  const day = Number(match[3]);
+  const date = new Date(year, monthIndex, day);
+
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== monthIndex ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+export function calculateTeacherStudentAge(
+  dateOfBirth: string | null | undefined,
+  referenceDate = new Date(),
+) {
+  const birthDate = parseDateOnly(dateOfBirth);
+
+  if (!birthDate) {
+    return null;
+  }
+
+  let age = referenceDate.getFullYear() - birthDate.getFullYear();
+  const monthDifference = referenceDate.getMonth() - birthDate.getMonth();
+
+  if (
+    monthDifference < 0 ||
+    (monthDifference === 0 && referenceDate.getDate() < birthDate.getDate())
+  ) {
+    age -= 1;
+  }
+
+  return age >= 0 ? age : null;
+}
+
 export function splitTeacherStudentFullName(fullName: string) {
   const trimmedName = fullName.trim();
 
@@ -63,40 +114,23 @@ export function getTeacherStudentStatusLabel(isActive: boolean | undefined) {
 }
 
 export function formatTeacherStudentDate(value: string | null | undefined) {
-  if (!value || value.trim().length === 0) {
+  const date = parseDateOnly(value);
+
+  if (!date) {
     return null;
   }
 
-  return dateFormatter.format(new Date(value));
+  return dateFormatter.format(date);
 }
 
 export function getTeacherStudentAge(student: TeacherStudent) {
-  if (typeof student.age === "number") {
-    return student.age;
+  const ageFromDateOfBirth = calculateTeacherStudentAge(student.dateOfBirth);
+
+  if (ageFromDateOfBirth !== null) {
+    return ageFromDateOfBirth;
   }
 
-  if (!student.dateOfBirth) {
-    return null;
-  }
-
-  const today = new Date();
-  const birthDate = new Date(student.dateOfBirth);
-
-  if (Number.isNaN(birthDate.getTime())) {
-    return null;
-  }
-
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDifference = today.getMonth() - birthDate.getMonth();
-
-  if (
-    monthDifference < 0 ||
-    (monthDifference === 0 && today.getDate() < birthDate.getDate())
-  ) {
-    age -= 1;
-  }
-
-  return age >= 0 ? age : null;
+  return typeof student.age === "number" ? student.age : null;
 }
 
 export function buildTeacherStudentFormValues(
@@ -110,7 +144,12 @@ export function buildTeacherStudentFormValues(
     name: student?.name ?? fallbackNameParts.name,
     surname: student?.surname ?? fallbackNameParts.surname,
     dateOfBirth: student?.dateOfBirth?.slice(0, 10) ?? "",
-    age: typeof student?.age === "number" ? String(student.age) : "",
+    age:
+      student?.dateOfBirth
+        ? String(calculateTeacherStudentAge(student.dateOfBirth) ?? "")
+        : typeof student?.age === "number"
+          ? String(student.age)
+          : "",
     gender: student?.gender ?? "UNSPECIFIED",
     healthInfo: student?.healthInfo ?? "",
     guardianName: student?.guardianName ?? "",
@@ -126,13 +165,20 @@ export function buildTeacherStudentFormValues(
 export function buildTeacherStudentMutationPayload(
   values: TeacherStudentFormValues,
 ) {
+  const calculatedAge = calculateTeacherStudentAge(values.dateOfBirth);
+
   return {
     studentId: values.studentId.trim() ? Number(values.studentId) : undefined,
     fullName: buildTeacherStudentFullName(values.name, values.surname),
     name: values.name.trim(),
     surname: values.surname.trim(),
     dateOfBirth: values.dateOfBirth.trim() || undefined,
-    age: values.age.trim() ? Number(values.age) : undefined,
+    age:
+      calculatedAge !== null
+        ? calculatedAge
+        : values.age.trim()
+          ? Number(values.age)
+          : undefined,
     gender: values.gender,
     healthInfo: values.healthInfo.trim(),
     guardianName: values.guardianName.trim(),

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Settings2 } from "lucide-react";
+import { Check } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-state";
@@ -35,8 +35,7 @@ type ToggleFieldName =
   | "isEnabled"
   | "distanceAlertsEnabled"
   | "motionSummaryEnabled"
-  | "recordingEnabled"
-  | "snapshotEnabled";
+  | "recordingEnabled";
 
 type MonitoringToggleCardProps = {
   label: string;
@@ -97,7 +96,7 @@ function mapFormValuesToPayload(
     distanceAlertsEnabled: values.distanceAlertsEnabled,
     motionSummaryEnabled: values.motionSummaryEnabled,
     recordingEnabled: values.recordingEnabled,
-    snapshotEnabled: values.snapshotEnabled,
+    snapshotEnabled: true,
     proximityThresholdCm: Number(values.proximityThresholdCm),
   };
 }
@@ -137,7 +136,6 @@ export function AdminMonitoringConfigsPageContent() {
       distanceAlertsEnabled: true,
       motionSummaryEnabled: true,
       recordingEnabled: true,
-      snapshotEnabled: true,
       proximityThresholdCm: "150",
     },
   });
@@ -163,11 +161,6 @@ export function AdminMonitoringConfigsPageContent() {
         name: "recordingEnabled" as const,
         label: "Recording",
         description: "Allow recording completion events to be persisted.",
-      },
-      {
-        name: "snapshotEnabled" as const,
-        label: "Snapshot",
-        description: "Allow snapshot-ready events to be accepted.",
       },
     ],
     [],
@@ -225,7 +218,6 @@ export function AdminMonitoringConfigsPageContent() {
         distanceAlertsEnabled: true,
         motionSummaryEnabled: true,
         recordingEnabled: true,
-        snapshotEnabled: true,
         proximityThresholdCm: "150",
       });
       await loadPageData();
@@ -324,11 +316,6 @@ export function AdminMonitoringConfigsPageContent() {
           eyebrow="Create Policy"
           title="Add monitoring config"
           description="Pick a class, tune the feature flags, and set the proximity threshold that runtime clients should consume."
-          actions={
-            <div className="rounded-full bg-[var(--surface-container-low)] p-2 text-[var(--on-surface-variant)]">
-              <Settings2 className="size-4" />
-            </div>
-          }
         >
           <form
             className="grid gap-5"

@@ -16,7 +16,6 @@ import type { TeacherStudentProfileResponse } from "@/types/teacher";
 
 import { MilestonesList } from "./profile/milestones-list";
 import { ProfileHeader } from "./profile/profile-header";
-import { SkillProgressCard } from "./profile/skill-progress-card";
 import { WeeklySummaryChart } from "./profile/weekly-summary-chart";
 
 type TeacherChildProfilePageContentProps = {
@@ -97,7 +96,6 @@ export function TeacherChildProfilePageContent({
         <ProfileHeader
           name={studentName}
           age={studentAge}
-          level={student.level ?? "Explorer"}
           enrolledDate={enrolledDateStr}
         />
 
@@ -114,11 +112,6 @@ export function TeacherChildProfilePageContent({
           </div>
 
           <div className="grid min-w-0 gap-10">
-            <SkillProgressCard
-              dexterity={student.dexterityScore}
-              balance={student.balanceScore}
-              coordination={student.coordinationScore}
-            />
             <MilestonesList milestones={milestones} />
           </div>
         </div>

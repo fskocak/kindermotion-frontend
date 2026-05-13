@@ -22,6 +22,9 @@ export const teacherStudentFormSchema = z.object({
   dateOfBirth: z.string().trim().refine(
     (value) => value === "" || /^\d{4}-\d{2}-\d{2}$/.test(value),
     "Enter a valid date of birth.",
+  ).refine(
+    (value) => value === "" || new Date(`${value}T00:00:00`).getTime() <= Date.now(),
+    "Date of birth cannot be in the future.",
   ),
   age: optionalWholeNumberField("Age"),
   gender: z.enum(teacherStudentGenderOptions),

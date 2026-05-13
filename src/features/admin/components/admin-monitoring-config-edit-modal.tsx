@@ -27,8 +27,7 @@ type ToggleFieldName =
   | "isEnabled"
   | "distanceAlertsEnabled"
   | "motionSummaryEnabled"
-  | "recordingEnabled"
-  | "snapshotEnabled";
+  | "recordingEnabled";
 
 type AdminMonitoringConfigEditModalProps = {
   open: boolean;
@@ -97,7 +96,6 @@ function mapConfigToFormValues(
     distanceAlertsEnabled: monitoringConfig.distanceAlertsEnabled,
     motionSummaryEnabled: monitoringConfig.motionSummaryEnabled,
     recordingEnabled: monitoringConfig.recordingEnabled,
-    snapshotEnabled: monitoringConfig.snapshotEnabled,
     proximityThresholdCm: String(monitoringConfig.proximityThresholdCm),
   };
 }
@@ -111,7 +109,7 @@ function mapFormValuesToPayload(
     distanceAlertsEnabled: values.distanceAlertsEnabled,
     motionSummaryEnabled: values.motionSummaryEnabled,
     recordingEnabled: values.recordingEnabled,
-    snapshotEnabled: values.snapshotEnabled,
+    snapshotEnabled: true,
     proximityThresholdCm: Number(values.proximityThresholdCm),
   };
 }
@@ -133,7 +131,6 @@ export function AdminMonitoringConfigEditModal({
       distanceAlertsEnabled: monitoringConfig?.distanceAlertsEnabled ?? true,
       motionSummaryEnabled: monitoringConfig?.motionSummaryEnabled ?? true,
       recordingEnabled: monitoringConfig?.recordingEnabled ?? true,
-      snapshotEnabled: monitoringConfig?.snapshotEnabled ?? true,
       proximityThresholdCm: String(
         monitoringConfig?.proximityThresholdCm ?? 150,
       ),
@@ -169,11 +166,6 @@ export function AdminMonitoringConfigEditModal({
         name: "recordingEnabled" as const,
         label: "Recording",
         description: "Accept recording completion events for this class.",
-      },
-      {
-        name: "snapshotEnabled" as const,
-        label: "Snapshot",
-        description: "Accept snapshot-ready events for this class.",
       },
     ],
     [],

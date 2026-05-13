@@ -76,11 +76,11 @@ export function TeacherStudentCard({
             </Button>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => onViewDetails(student)}
             >
-              Health details
+              Student Details
             </Button>
             <Button
               type="button"
