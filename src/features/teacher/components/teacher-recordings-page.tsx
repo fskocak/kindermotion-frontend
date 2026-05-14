@@ -4,8 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import {
   ExternalLink,
+  FileVideo,
   ImageIcon,
   RefreshCcw,
+  Trash2,
   Video,
 } from "lucide-react";
 
@@ -177,6 +179,8 @@ type RecordingCardProps = {
   snapshotAccessState: AssetAccessState;
   onRequestRecordingAccess: (recordingId: string, action: AssetActionKind) => void;
   onRequestSnapshotAccess: (snapshotId: string, action: AssetActionKind) => void;
+  onDeleteRecording: (recordingId: string) => void;
+  isDeletingRecording: boolean;
 };
 
 function RecordingCard({
@@ -185,6 +189,8 @@ function RecordingCard({
   snapshotAccessState,
   onRequestRecordingAccess,
   onRequestSnapshotAccess,
+  onDeleteRecording,
+  isDeletingRecording,
 }: RecordingCardProps) {
   const snapshotAvailable = Boolean(recording.snapshot);
   const recordingAccessAvailable = isAccessAvailable(recordingAccessState.access);
@@ -208,6 +214,12 @@ function RecordingCard({
               <ImageIcon className="size-3.5" />
               {snapshotAvailable ? "SNAPSHOT LINKED" : "NO SNAPSHOT"}
             </div>
+            {recording.mlJob ? (
+              <div className="inline-flex items-center gap-2 rounded-full bg-[var(--surface-container-low)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--on-surface-variant)]">
+                <FileVideo className="size-3.5" />
+                ML {recording.mlJob.status}
+              </div>
+            ) : null}
           </div>
           <div>
             <h3 className="text-lg font-semibold tracking-[-0.02em] text-[var(--on-surface)]">
@@ -248,12 +260,26 @@ function RecordingCard({
       </div>
 
       <div className="mt-5 grid gap-4 xl:grid-cols-2">
-        <AssetActions
-          title="Recording asset"
-          accessState={recordingAccessState}
-          isReady={recordingAssetReady}
-          onRequestAccess={(action) => onRequestRecordingAccess(recording.id, action)}
-        />
+        <div className="rounded-[1.5rem] border border-[var(--panel-border)] bg-[var(--surface-container-low)] p-4">
+          <AssetActions
+            title="Recording asset"
+            accessState={recordingAccessState}
+            isReady={recordingAssetReady}
+            onRequestAccess={(action) => onRequestRecordingAccess(recording.id, action)}
+          />
+          <div className="mt-3 flex flex-wrap gap-3">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={isDeletingRecording}
+              onClick={() => onDeleteRecording(recording.id)}
+            >
+              <Trash2 />
+              {isDeletingRecording ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
+        </div>
 
         <div className="rounded-[1.5rem] border border-[var(--panel-border)] bg-[var(--surface-container-low)] p-4">
           <div className="mb-3">
@@ -289,6 +315,26 @@ function RecordingCard({
           ) : null}
         </div>
       </div>
+
+      {recording.mlJob ? (
+        <div className="mt-5 rounded-[1.5rem] border border-[var(--panel-border)] bg-[var(--surface-container-low)] p-4">
+          <p className="text-sm font-semibold text-[var(--on-surface)]">ML outputs</p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <RecordingMetaItem
+              label="Video IDs"
+              value={recording.mlJob.trackIds.join(", ") || "None"}
+            />
+            <RecordingMetaItem
+              label="PDF"
+              value={recording.mlJob.reportAsset?.status ?? "Missing"}
+            />
+            <RecordingMetaItem
+              label="Processed Video"
+              value={recording.mlJob.processedVideoAsset?.status ?? "Missing"}
+            />
+          </div>
+        </div>
+      ) : null}
     </article>
   );
 }
@@ -308,6 +354,9 @@ export function TeacherRecordingsPageContent() {
   const [isLoadingClasses, setIsLoadingClasses] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [recordingMutationMessage, setRecordingMutationMessage] = useState<string | null>(null);
+  const [recordingMutationError, setRecordingMutationError] = useState<string | null>(null);
+  const [deletingRecordingId, setDeletingRecordingId] = useState<string | null>(null);
 
   const selectedClass = classes.find((classItem) => classItem.id === selectedClassId);
 
@@ -343,6 +392,21 @@ export function TeacherRecordingsPageContent() {
       setIsRefreshing(false);
     }
   }, [selectedClassId, selectedDate]);
+
+  async function deleteRecording(recordingId: string) {
+    setDeletingRecordingId(recordingId);
+    setRecordingMutationError(null);
+
+    try {
+      await teacherService.deleteRecording(recordingId);
+      setRecordingMutationMessage("Recording deleted.");
+      await loadRecordings(true);
+    } catch (error) {
+      setRecordingMutationError(getApiErrorMessage(error));
+    } finally {
+      setDeletingRecordingId(null);
+    }
+  }
 
   useEffect(() => {
     let isActive = true;
@@ -552,6 +616,15 @@ export function TeacherRecordingsPageContent() {
         ) : null}
       </DashboardSectionCard>
 
+      {recordingMutationMessage ? (
+        <div className="rounded-[1.25rem] bg-[var(--surface-container-low)] px-4 py-3 text-sm font-medium text-[var(--on-surface)]">
+          {recordingMutationMessage}
+        </div>
+      ) : null}
+      {recordingMutationError ? (
+        <MutationFeedback message={recordingMutationError} />
+      ) : null}
+
       {selectedClassId ? (
         <DashboardSectionCard
           eyebrow="Teacher media"
@@ -588,12 +661,17 @@ export function TeacherRecordingsPageContent() {
 
                   void requestAccess("snapshot", snapshotId, action);
                 }}
+                onDeleteRecording={(recordingId) => {
+                  void deleteRecording(recordingId);
+                }}
+                isDeletingRecording={deletingRecordingId === recording.id}
               />
             ))}
           </div>
         )}
         </DashboardSectionCard>
       ) : null}
+
     </DashboardPage>
   );
 }
