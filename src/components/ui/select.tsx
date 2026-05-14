@@ -12,6 +12,7 @@ function Select({
       data-slot="select"
       className={cn(
         "flex h-12 w-full rounded-[1.4rem] bg-[var(--surface-container-low)] px-4 py-3 text-sm text-[var(--on-surface)] outline-none transition-all focus:bg-[var(--surface-container-lowest)] focus:ring-4 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 [&>option]:bg-[var(--surface)] [&>option]:text-[var(--on-surface)] [&>option:disabled]:text-[var(--placeholder)]",
+
         className,
       )}
       {...props}

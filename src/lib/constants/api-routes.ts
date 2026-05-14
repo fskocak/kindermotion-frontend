@@ -16,6 +16,7 @@ export const API_ROUTES = {
     monitoringConfig: "/teacher/monitoring-config",
     alerts: "/teacher/alerts",
     recordings: "/teacher/recordings",
+    mlJobs: "/teacher/recordings/ml-jobs",
     snapshots: "/teacher/snapshots",
   },
 } as const;
