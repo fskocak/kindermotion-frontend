@@ -31,9 +31,6 @@ export function SiteShell({
           <div className="flex flex-wrap items-center gap-3">
             <ThemeToggle />
             <Button asChild variant="ghost" size="sm">
-              <Link href="/">Home</Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
               <Link href="/admin-login">Admin Login</Link>
             </Button>
             <Button asChild variant="outline" size="sm">

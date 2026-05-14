@@ -34,7 +34,7 @@ export function TeacherStudentDetailModal({
     <Modal
       open={open}
       onClose={onClose}
-      eyebrow="Teacher Detail"
+      eyebrow="Student Detail"
       title={studentName ?? "Student details"}
       description="Review the stored student identity, guardian, status, and health information. Empty fields are shown with a clear fallback."
       className="max-w-3xl"

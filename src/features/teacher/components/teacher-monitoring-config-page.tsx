@@ -30,8 +30,7 @@ type ToggleFieldName =
   | "isEnabled"
   | "distanceAlertsEnabled"
   | "motionSummaryEnabled"
-  | "recordingEnabled"
-  | "snapshotEnabled";
+  | "recordingEnabled";
 
 type MonitoringToggleCardProps = {
   label: string;
@@ -57,7 +56,7 @@ function MonitoringToggleCard({
       onClick={onToggle}
       className={`flex w-full items-center justify-between gap-4 rounded-[1.75rem] border px-5 py-4 text-left transition-all ${
         checked
-          ? "border-[var(--primary)] bg-[var(--primary-soft)]"
+          ? "border-[var(--primary)] bg-[rgba(29,185,243,0.2)] shadow-[0_0_0_1px_var(--primary),0_16px_40px_rgba(29,185,243,0.14)]"
           : "border-[var(--panel-border)] bg-[var(--surface-container-low)]"
       } disabled:cursor-not-allowed disabled:opacity-60`}
     >
@@ -71,12 +70,17 @@ function MonitoringToggleCard({
       </div>
 
       <span
-        className={`inline-flex h-8 min-w-16 items-center rounded-full px-1 transition-colors ${
+        className={`inline-flex h-9 min-w-20 items-center rounded-full px-1.5 transition-colors ${
           checked
-            ? "justify-end bg-[var(--brand-primary)]"
+            ? "justify-between bg-[var(--primary)] text-[var(--button-foreground)] shadow-[var(--shadow-button)]"
             : "justify-start bg-[var(--surface-container-high)]"
         }`}
       >
+        {checked ? (
+          <span className="pl-2 text-[11px] font-bold uppercase tracking-[0.12em]">
+            ON
+          </span>
+        ) : null}
         <span className="flex size-6 items-center justify-center rounded-full bg-white text-[var(--brand-primary)] shadow-sm">
           {checked ? <Check className="size-4" /> : null}
         </span>
@@ -186,11 +190,6 @@ export function TeacherMonitoringConfigPageContent() {
       label: "Recording",
       description: "Allow recording completion events to be accepted for this source.",
     },
-    {
-      name: "snapshotEnabled",
-      label: "Snapshot",
-      description: "Allow snapshot-ready events to be accepted and persisted.",
-    },
   ];
 
   function handleToggle(name: ToggleFieldName) {
@@ -267,7 +266,6 @@ export function TeacherMonitoringConfigPageContent() {
     { label: "Distance alerts", enabled: config.distanceAlertsEnabled },
     { label: "Motion summary", enabled: config.motionSummaryEnabled },
     { label: "Recording", enabled: config.recordingEnabled },
-    { label: "Snapshot", enabled: config.snapshotEnabled },
   ];
 
   return (

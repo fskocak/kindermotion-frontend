@@ -75,10 +75,6 @@ export function AdminMonitoringConfigCard({
               label="Recording"
               enabled={monitoringConfig.recordingEnabled}
             />
-            <FlagChip
-              label="Snapshot"
-              enabled={monitoringConfig.snapshotEnabled}
-            />
           </div>
 
           <p className="text-sm leading-6 text-[var(--on-surface-variant)]">

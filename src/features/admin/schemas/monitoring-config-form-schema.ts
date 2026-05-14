@@ -6,7 +6,6 @@ export const adminMonitoringConfigFormSchema = z.object({
   distanceAlertsEnabled: z.boolean(),
   motionSummaryEnabled: z.boolean(),
   recordingEnabled: z.boolean(),
-  snapshotEnabled: z.boolean(),
   proximityThresholdCm: z
     .string()
     .trim()

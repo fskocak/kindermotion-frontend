@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+
 import { useEffect, useRef, useState } from "react";
 import { Check, ExternalLink, LoaderCircle, Minus, Square, Video } from "lucide-react";
 
@@ -116,6 +117,7 @@ export function TeacherClassStudentsPage({
   const liveImageRef = useRef<HTMLImageElement | null>(null);
   const livePointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const mlProcessing = useMlProcessing();
+
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -670,6 +672,7 @@ export function TeacherClassStudentsPage({
         </DashboardSectionCard>
 
         <DashboardSectionCard
+
           eyebrow="Class camera"
           title="Camera recording"
           actions={
@@ -784,6 +787,7 @@ export function TeacherClassStudentsPage({
         <TeacherMlUploadCard classId={classId} />
 
         <DashboardSectionCard
+
           eyebrow="Students"
           title="Class students"
           actions={

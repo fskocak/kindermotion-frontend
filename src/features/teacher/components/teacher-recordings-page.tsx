@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MutationFeedback } from "@/components/ui/mutation-feedback";
 import { Select } from "@/components/ui/select";
+import { TeacherCameraRecordingPanel } from "@/features/teacher/components/teacher-camera-recording-panel";
 import { formatDateTime } from "@/lib/format/date-time";
 import { getApiErrorMessage } from "@/lib/http/get-api-error-message";
 import { teacherService } from "@/services";
@@ -616,14 +617,12 @@ export function TeacherRecordingsPageContent() {
         ) : null}
       </DashboardSectionCard>
 
-      {recordingMutationMessage ? (
-        <div className="rounded-[1.25rem] bg-[var(--surface-container-low)] px-4 py-3 text-sm font-medium text-[var(--on-surface)]">
-          {recordingMutationMessage}
-        </div>
-      ) : null}
-      {recordingMutationError ? (
-        <MutationFeedback message={recordingMutationError} />
-      ) : null}
+      <TeacherCameraRecordingPanel
+        onRecordingUploaded={() => {
+          void loadRecordings(true);
+        }}
+      />
+
 
       {selectedClassId ? (
         <DashboardSectionCard

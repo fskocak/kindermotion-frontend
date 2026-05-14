@@ -31,6 +31,9 @@ import {
 } from "./profile/ml-report-metrics";
 import { ProfileHeader } from "./profile/profile-header";
 
+import { WeeklySummaryChart } from "./profile/weekly-summary-chart";
+
+
 type TeacherChildProfilePageContentProps = {
   studentId: string;
 };
@@ -263,7 +266,6 @@ export function TeacherChildProfilePageContent({
         <ProfileHeader
           name={studentName}
           age={studentAge}
-          level={student.level ?? "Explorer"}
           enrolledDate={enrolledDateStr}
         />
 
@@ -377,7 +379,8 @@ export function TeacherChildProfilePageContent({
             ) : null}
           </div>
 
-          <div className="grid min-w-0">
+          <div className="grid min-w-0 gap-10">
+
             <MilestonesList milestones={milestones} />
           </div>
         </div>

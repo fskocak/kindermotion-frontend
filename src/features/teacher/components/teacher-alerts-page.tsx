@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { CheckCircle2, RefreshCcw } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { CheckCircle2, RefreshCcw, Trash2, UsersRound } from "lucide-react";
 
 import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-state";
 import { DashboardErrorState } from "@/components/dashboard/dashboard-error-state";
@@ -13,10 +13,16 @@ import { Button } from "@/components/ui/button";
 import { MutationFeedback } from "@/components/ui/mutation-feedback";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/providers/toast-provider";
+import { getTeacherStudentDisplayName } from "@/features/teacher/student-utils";
 import { formatDateTime } from "@/lib/format/date-time";
 import { getApiErrorMessage } from "@/lib/http/get-api-error-message";
 import { teacherService } from "@/services";
-import type { TeacherAlert, TeacherAlertStatus } from "@/types/teacher";
+import type {
+  TeacherAlert,
+  TeacherAlertStatus,
+  TeacherClass,
+  TeacherStudent,
+} from "@/types/teacher";
 
 const ALERT_STATUS_OPTIONS = [
   { label: "All statuses", value: "ALL" },
@@ -32,6 +38,18 @@ const ALERT_LIMIT_OPTIONS = [
 ] as const;
 
 type AlertStatusFilter = "ALL" | TeacherAlertStatus;
+
+type SelectedStudentPair = {
+  id: string;
+  classId: string;
+  className: string;
+  firstStudentId: string;
+  firstStudentName: string;
+  secondStudentId: string;
+  secondStudentName: string;
+};
+
+const PAIR_STORAGE_KEY = "kindermotion:teacher-alert-student-pairs";
 
 function getSeverityBadgeVariant(severity: string) {
   return severity.toUpperCase() === "HIGH" ? "primary" : "muted";
@@ -147,14 +165,72 @@ function AlertCard({ alert, isAcknowledging, onAcknowledge }: AlertCardProps) {
   );
 }
 
+function buildPairId(classId: string, firstStudentId: string, secondStudentId: string) {
+  const [left, right] = [firstStudentId, secondStudentId].sort();
+
+  return `${classId}:${left}:${right}`;
+}
+
+function loadStoredPairs() {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(PAIR_STORAGE_KEY);
+
+    if (!rawValue) {
+      return [];
+    }
+
+    const parsedValue = JSON.parse(rawValue);
+
+    if (!Array.isArray(parsedValue)) {
+      return [];
+    }
+
+    return parsedValue.filter(
+      (pair): pair is SelectedStudentPair =>
+        typeof pair?.id === "string" &&
+        typeof pair?.classId === "string" &&
+        typeof pair?.className === "string" &&
+        typeof pair?.firstStudentId === "string" &&
+        typeof pair?.firstStudentName === "string" &&
+        typeof pair?.secondStudentId === "string" &&
+        typeof pair?.secondStudentName === "string",
+    );
+  } catch {
+    return [];
+  }
+}
+
+function saveStoredPairs(pairs: SelectedStudentPair[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(PAIR_STORAGE_KEY, JSON.stringify(pairs));
+}
+
 export function TeacherAlertsPageContent() {
   const toast = useToast();
   const [alerts, setAlerts] = useState<TeacherAlert[]>([]);
+  const [classes, setClasses] = useState<TeacherClass[]>([]);
+  const [students, setStudents] = useState<TeacherStudent[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState("");
+  const [firstStudentId, setFirstStudentId] = useState("");
+  const [secondStudentId, setSecondStudentId] = useState("");
+  const [selectedPairs, setSelectedPairs] = useState<SelectedStudentPair[]>(
+    () => loadStoredPairs(),
+  );
   const [statusFilter, setStatusFilter] = useState<AlertStatusFilter>("ALL");
   const [limit, setLimit] = useState<number>(20);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingClasses, setIsLoadingClasses] = useState(true);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [pairError, setPairError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [acknowledgingAlertId, setAcknowledgingAlertId] = useState<string | null>(
@@ -191,6 +267,163 @@ export function TeacherAlertsPageContent() {
   useEffect(() => {
     void loadAlerts();
   }, [loadAlerts]);
+
+  useEffect(() => {
+    saveStoredPairs(selectedPairs);
+  }, [selectedPairs]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadClasses() {
+      try {
+        setPairError(null);
+        const response = await teacherService.listMyClasses();
+
+        if (!isActive) {
+          return;
+        }
+
+        setClasses(response);
+
+        setSelectedClassId((currentClassId) =>
+          currentClassId || response[0]?.id || "",
+        );
+      } catch (error) {
+        if (isActive) {
+          setPairError(getApiErrorMessage(error));
+        }
+      } finally {
+        if (isActive) {
+          setIsLoadingClasses(false);
+        }
+      }
+    }
+
+    void loadClasses();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadStudents() {
+      if (!selectedClassId) {
+        setStudents([]);
+        setFirstStudentId("");
+        setSecondStudentId("");
+        return;
+      }
+
+      try {
+        setPairError(null);
+        setIsLoadingStudents(true);
+        const response = await teacherService.getClassStudents(selectedClassId, {
+          page: 1,
+          limit: 100,
+        });
+
+        if (!isActive) {
+          return;
+        }
+
+        setStudents(response.items);
+        setFirstStudentId("");
+        setSecondStudentId("");
+      } catch (error) {
+        if (isActive) {
+          setPairError(getApiErrorMessage(error));
+          setStudents([]);
+        }
+      } finally {
+        if (isActive) {
+          setIsLoadingStudents(false);
+        }
+      }
+    }
+
+    void loadStudents();
+
+    return () => {
+      isActive = false;
+    };
+  }, [selectedClassId]);
+
+  const selectedClass = classes.find((classItem) => classItem.id === selectedClassId);
+  const firstStudentOptions = students.filter(
+    (student) => student.id !== secondStudentId,
+  );
+  const secondStudentOptions = students.filter(
+    (student) => student.id !== firstStudentId,
+  );
+  const selectedClassAlerts = useMemo(
+    () =>
+      selectedClassId
+        ? alerts.filter((alert) => alert.classroomId === selectedClassId)
+        : alerts,
+    [alerts, selectedClassId],
+  );
+  const activeSelectedClassAlerts = selectedClassAlerts.filter(
+    (alert) => alert.status === "ACTIVE",
+  );
+
+  function handleAddPair() {
+    setPairError(null);
+
+    if (!selectedClass) {
+      setPairError("Select a class before adding a student pair.");
+      return;
+    }
+
+    if (!firstStudentId || !secondStudentId) {
+      setPairError("Select two students to create a pair.");
+      return;
+    }
+
+    if (firstStudentId === secondStudentId) {
+      setPairError("A pair must contain two different students.");
+      return;
+    }
+
+    const firstStudent = students.find((student) => student.id === firstStudentId);
+    const secondStudent = students.find((student) => student.id === secondStudentId);
+
+    if (!firstStudent || !secondStudent) {
+      setPairError("Selected students could not be found in this class.");
+      return;
+    }
+
+    const pairId = buildPairId(selectedClass.id, firstStudent.id, secondStudent.id);
+
+    if (selectedPairs.some((pair) => pair.id === pairId)) {
+      setPairError("This student pair is already selected.");
+      return;
+    }
+
+    setSelectedPairs((currentPairs) => [
+      ...currentPairs,
+      {
+        id: pairId,
+        classId: selectedClass.id,
+        className: selectedClass.name,
+        firstStudentId: firstStudent.id,
+        firstStudentName: getTeacherStudentDisplayName(firstStudent),
+        secondStudentId: secondStudent.id,
+        secondStudentName: getTeacherStudentDisplayName(secondStudent),
+      },
+    ]);
+    setFirstStudentId("");
+    setSecondStudentId("");
+  }
+
+  function handleRemovePair(pairId: string) {
+    setSelectedPairs((currentPairs) =>
+      currentPairs.filter((pair) => pair.id !== pairId),
+    );
+  }
 
   async function handleAcknowledge(alertId: string) {
     setActionError(null);
@@ -247,6 +480,196 @@ export function TeacherAlertsPageContent() {
       title="Alerts"
       description="Review recent classroom distance alerts and acknowledge active items."
     >
+      <DashboardSectionCard
+        eyebrow="Student pairs"
+        title="Pair monitoring"
+        description="Select student pairs inside a class. When these students fall under the configured distance threshold, the resulting distance alerts should be reviewed here."
+        actions={
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => void loadAlerts(true)}
+            disabled={isRefreshing || acknowledgingAlertId !== null}
+          >
+            <RefreshCcw className={isRefreshing ? "animate-spin" : ""} />
+            Refresh alerts
+          </Button>
+        }
+      >
+        <div className="space-y-5">
+          <div className="grid gap-4 rounded-[1.5rem] bg-[var(--surface-container-low)] p-4 lg:grid-cols-[minmax(180px,0.8fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto] lg:items-end">
+            <label className="grid gap-2 text-sm text-[var(--on-surface-variant)]">
+              <span>Class</span>
+              <Select
+                value={selectedClassId}
+                disabled={isLoadingClasses}
+                onChange={(event) => {
+                  setPairError(null);
+                  setSelectedClassId(event.target.value);
+                }}
+              >
+                {classes.length === 0 ? (
+                  <option value="">No classes</option>
+                ) : (
+                  classes.map((classItem) => (
+                    <option key={classItem.id} value={classItem.id}>
+                      {classItem.name}
+                    </option>
+                  ))
+                )}
+              </Select>
+            </label>
+
+            <label className="grid gap-2 text-sm text-[var(--on-surface-variant)]">
+              <span>First student</span>
+              <Select
+                value={firstStudentId}
+                disabled={!selectedClassId || isLoadingStudents}
+                onChange={(event) => {
+                  setPairError(null);
+                  setFirstStudentId(event.target.value);
+                }}
+              >
+                <option value="">
+                  {isLoadingStudents ? "Loading students" : "Select student"}
+                </option>
+                {firstStudentOptions.map((student) => (
+                  <option key={student.id} value={student.id}>
+                    {getTeacherStudentDisplayName(student)}
+                  </option>
+                ))}
+              </Select>
+            </label>
+
+            <label className="grid gap-2 text-sm text-[var(--on-surface-variant)]">
+              <span>Second student</span>
+              <Select
+                value={secondStudentId}
+                disabled={!selectedClassId || isLoadingStudents}
+                onChange={(event) => {
+                  setPairError(null);
+                  setSecondStudentId(event.target.value);
+                }}
+              >
+                <option value="">
+                  {isLoadingStudents ? "Loading students" : "Select student"}
+                </option>
+                {secondStudentOptions.map((student) => (
+                  <option key={student.id} value={student.id}>
+                    {getTeacherStudentDisplayName(student)}
+                  </option>
+                ))}
+              </Select>
+            </label>
+
+            <Button
+              type="button"
+              size="sm"
+              disabled={isLoadingStudents || students.length < 2}
+              onClick={handleAddPair}
+            >
+              <UsersRound />
+              Add pair
+            </Button>
+          </div>
+
+          {pairError ? <MutationFeedback message={pairError} /> : null}
+
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
+            <div className="rounded-[1.5rem] bg-[var(--surface-container-low)] p-4">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-base font-semibold text-[var(--on-surface)]">
+                    Selected student pairs
+                  </p>
+                  <p className="mt-1 text-sm text-[var(--on-surface-variant)]">
+                    These pairs define who should be watched for threshold-based distance alerts.
+                  </p>
+                </div>
+                <Badge>{selectedPairs.length}</Badge>
+              </div>
+
+              {selectedPairs.length === 0 ? (
+                <DashboardEmptyState
+                  title="No student pairs selected"
+                  description="Choose a class and two students to create the pair list teachers will review for distance threshold alerts."
+                />
+              ) : (
+                <div className="grid gap-3">
+                  {selectedPairs.map((pair) => (
+                    <div
+                      key={pair.id}
+                      className="flex flex-col gap-3 rounded-[1.25rem] bg-[var(--surface-container-lowest)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div>
+                        <p className="font-semibold text-[var(--on-surface)]">
+                          {pair.firstStudentName} + {pair.secondStudentName}
+                        </p>
+                        <p className="mt-1 text-sm text-[var(--on-surface-variant)]">
+                          {pair.className}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRemovePair(pair.id)}
+                      >
+                        <Trash2 />
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-[1.5rem] bg-[var(--surface-container-low)] p-4">
+              <p className="text-base font-semibold text-[var(--on-surface)]">
+                Alert list for selected pairs
+              </p>
+              <p className="mt-1 text-sm leading-6 text-[var(--on-surface-variant)]">
+                If a selected pair drops below the configured distance threshold,
+                the system should surface it as an active distance alert in this feed.
+              </p>
+
+              <div className="mt-4 grid gap-3">
+                {selectedPairs.length === 0 ? (
+                  <p className="rounded-[1.25rem] bg-[var(--surface-container-lowest)] px-4 py-3 text-sm text-[var(--on-surface-variant)]">
+                    Add at least one pair to define the alert review list.
+                  </p>
+                ) : (
+                  selectedPairs.map((pair) => (
+                    <div
+                      key={pair.id}
+                      className="rounded-[1.25rem] bg-[var(--surface-container-lowest)] px-4 py-3"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm font-semibold text-[var(--on-surface)]">
+                          {pair.firstStudentName} / {pair.secondStudentName}
+                        </p>
+                        <span className="rounded-full bg-[var(--primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
+                          Watching
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm text-[var(--on-surface-variant)]">
+                        Alert condition: pair distance below threshold.
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="mt-4 rounded-[1.25rem] bg-[var(--surface-container-lowest)] px-4 py-3 text-sm text-[var(--on-surface-variant)]">
+                {activeSelectedClassAlerts.length} active classroom alert
+                {activeSelectedClassAlerts.length === 1 ? "" : "s"} currently match the selected class.
+              </div>
+            </div>
+          </div>
+        </div>
+      </DashboardSectionCard>
+
       <DashboardSectionCard
         eyebrow="Teacher feed"
         title="Distance alerts"
