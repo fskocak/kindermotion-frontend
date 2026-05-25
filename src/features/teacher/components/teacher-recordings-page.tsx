@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import {
+  ChevronDown,
   ExternalLink,
   FileVideo,
-  ImageIcon,
   RefreshCcw,
   Trash2,
   Video,
@@ -15,6 +15,7 @@ import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-stat
 import { DashboardErrorState } from "@/components/dashboard/dashboard-error-state";
 import { DashboardLoadingState } from "@/components/dashboard/dashboard-loading-state";
 import { DashboardPage } from "@/components/dashboard/dashboard-page";
+import { DashboardPagination } from "@/components/dashboard/dashboard-pagination";
 import { DashboardSectionCard } from "@/components/dashboard/dashboard-section-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,15 +23,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MutationFeedback } from "@/components/ui/mutation-feedback";
 import { Select } from "@/components/ui/select";
-import { TeacherCameraRecordingPanel } from "@/features/teacher/components/teacher-camera-recording-panel";
+import { TeacherLiveRecordingPanel } from "@/features/teacher/components/teacher-live-recording-panel";
+import { TeacherMlUploadCard } from "@/features/teacher/components/teacher-ml-upload-card";
 import { formatDateTime } from "@/lib/format/date-time";
 import { getApiErrorMessage } from "@/lib/http/get-api-error-message";
 import { teacherService } from "@/services";
+import type { PaginationMeta } from "@/types/api";
 import type {
   TeacherClass,
   TeacherRecording,
   TeacherRecordingAssetAccess,
 } from "@/types/teacher";
+
+const RECORDINGS_PAGE_LIMIT = 10;
 
 function formatDuration(durationMs: number | null) {
   if (durationMs === null) {
@@ -177,9 +182,7 @@ function AssetActions({
 type RecordingCardProps = {
   recording: TeacherRecording;
   recordingAccessState: AssetAccessState;
-  snapshotAccessState: AssetAccessState;
   onRequestRecordingAccess: (recordingId: string, action: AssetActionKind) => void;
-  onRequestSnapshotAccess: (snapshotId: string, action: AssetActionKind) => void;
   onDeleteRecording: (recordingId: string) => void;
   isDeletingRecording: boolean;
 };
@@ -187,22 +190,29 @@ type RecordingCardProps = {
 function RecordingCard({
   recording,
   recordingAccessState,
-  snapshotAccessState,
   onRequestRecordingAccess,
-  onRequestSnapshotAccess,
   onDeleteRecording,
   isDeletingRecording,
 }: RecordingCardProps) {
-  const snapshotAvailable = Boolean(recording.snapshot);
+  const [isExpanded, setIsExpanded] = useState(false);
   const recordingAccessAvailable = isAccessAvailable(recordingAccessState.access);
-  const snapshotAccessAvailable = isAccessAvailable(snapshotAccessState.access);
   const recordingAssetReady = recording.assetStatus === "READY";
-  const snapshotAssetReady = recording.snapshot?.status === "READY";
 
   return (
     <article className="rounded-[1.75rem] border border-[var(--panel-border)] bg-[var(--surface-container-lowest)] p-5 shadow-[var(--shadow-soft)]">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="space-y-3">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <button
+          type="button"
+          className="flex min-w-0 flex-1 items-start gap-3 text-left"
+          onClick={() => setIsExpanded((current) => !current)}
+          aria-expanded={isExpanded}
+        >
+          <span className="mt-1 grid size-9 shrink-0 place-items-center rounded-full bg-[var(--surface-container-low)] text-[var(--on-surface)]">
+            <ChevronDown
+              className={`size-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+            />
+          </span>
+          <span className="min-w-0 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={recording.status === "READY" ? "primary" : "muted"}>
               {recording.status}
@@ -210,10 +220,6 @@ function RecordingCard({
             <div className="inline-flex items-center gap-2 rounded-full bg-[var(--surface-container-low)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--on-surface-variant)]">
               <Video className="size-3.5" />
               {recording.assetStatus ?? "UNKNOWN ASSET"}
-            </div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--surface-container-low)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--on-surface-variant)]">
-              <ImageIcon className="size-3.5" />
-              {snapshotAvailable ? "SNAPSHOT LINKED" : "NO SNAPSHOT"}
             </div>
             {recording.mlJob ? (
               <div className="inline-flex items-center gap-2 rounded-full bg-[var(--surface-container-low)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--on-surface-variant)]">
@@ -227,113 +233,66 @@ function RecordingCard({
               Recording result
             </h3>
             <p className="mt-1 text-sm leading-6 text-[var(--on-surface-variant)]">
-              Captured on camera {recording.cameraId} and stored by the backend control plane.
+              {formatDateTime(recording.startedAt)} · {formatDuration(recording.durationMs)}
             </p>
           </div>
-        </div>
+          </span>
+        </button>
 
-        <div className="grid gap-2 text-sm text-[var(--on-surface-variant)]">
-          <div>
-            <span className="font-semibold text-[var(--on-surface)]">Preview:</span>{" "}
-            {recordingAccessAvailable ? "Available" : "Fetch on demand"}
+        <div className="flex flex-wrap items-center gap-3 xl:justify-end">
+          <div className="rounded-[1.25rem] bg-[var(--surface-container-low)] px-4 py-3 text-sm text-[var(--on-surface-variant)]">
+            <span className="font-semibold text-[var(--on-surface)]">Access:</span>{" "}
+            {recordingAccessAvailable ? "Ready" : "On demand"}
           </div>
-          <div>
-            <span className="font-semibold text-[var(--on-surface)]">Download:</span>{" "}
-            {recordingAccessState.access?.downloadUrl ? "Available" : "Fetch on demand"}
-          </div>
-          <div>
-            <span className="font-semibold text-[var(--on-surface)]">Snapshot:</span>{" "}
-            {snapshotAvailable ? "Linked" : "Missing"}
-          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={isDeletingRecording}
+            onClick={() => onDeleteRecording(recording.id)}
+          >
+            <Trash2 />
+            {isDeletingRecording ? "Deleting..." : "Delete"}
+          </Button>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <RecordingMetaItem label="Started At" value={formatDateTime(recording.startedAt)} />
-        <RecordingMetaItem label="Ended At" value={formatDateTime(recording.endedAt)} />
-        <RecordingMetaItem label="Duration" value={formatDuration(recording.durationMs)} />
-        <RecordingMetaItem label="Created" value={formatDateTime(recording.createdAt)} />
-        <RecordingMetaItem label="Updated" value={formatDateTime(recording.updatedAt)} />
-        <RecordingMetaItem
-          label="Asset Ready"
-          value={recording.assetStatus === "READY" ? "Yes" : "No"}
-        />
-      </div>
-
-      <div className="mt-5 grid gap-4 xl:grid-cols-2">
-        <div className="rounded-[1.5rem] border border-[var(--panel-border)] bg-[var(--surface-container-low)] p-4">
+      {isExpanded ? (
+        <div className="mt-5 space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <RecordingMetaItem label="Started At" value={formatDateTime(recording.startedAt)} />
+            <RecordingMetaItem label="Ended At" value={formatDateTime(recording.endedAt)} />
+            <RecordingMetaItem label="Duration" value={formatDuration(recording.durationMs)} />
+            <RecordingMetaItem
+              label="Asset Ready"
+              value={recording.assetStatus === "READY" ? "Yes" : "No"}
+            />
+          </div>
           <AssetActions
             title="Recording asset"
             accessState={recordingAccessState}
             isReady={recordingAssetReady}
             onRequestAccess={(action) => onRequestRecordingAccess(recording.id, action)}
           />
-          <div className="mt-3 flex flex-wrap gap-3">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={isDeletingRecording}
-              onClick={() => onDeleteRecording(recording.id)}
-            >
-              <Trash2 />
-              {isDeletingRecording ? "Deleting..." : "Delete"}
-            </Button>
-          </div>
-        </div>
-
-        <div className="rounded-[1.5rem] border border-[var(--panel-border)] bg-[var(--surface-container-low)] p-4">
-          <div className="mb-3">
-            <p className="text-sm font-semibold text-[var(--on-surface)]">Snapshot relation</p>
-            <p className="mt-1 text-sm text-[var(--on-surface-variant)]">
-              {recording.snapshot
-                ? `Snapshot captured ${formatDateTime(recording.snapshot.capturedAt)} with status ${recording.snapshot.status}.`
-                : "No snapshot metadata is linked to this recording yet."}
-            </p>
-          </div>
-
-          {recording.snapshot ? (
-            <div className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-2">
+          {recording.mlJob ? (
+            <div className="rounded-[1.5rem] border border-[var(--panel-border)] bg-[var(--surface-container-low)] p-4">
+              <p className="text-sm font-semibold text-[var(--on-surface)]">ML outputs</p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 <RecordingMetaItem
-                  label="Snapshot Captured"
-                  value={formatDateTime(recording.snapshot.capturedAt)}
+                  label="Video IDs"
+                  value={recording.mlJob.trackIds.join(", ") || "None"}
                 />
                 <RecordingMetaItem
-                  label="Snapshot Access"
-                  value={snapshotAccessAvailable ? "Available" : "Fetch on demand"}
+                  label="PDF"
+                  value={recording.mlJob.reportAsset?.status ?? "Missing"}
+                />
+                <RecordingMetaItem
+                  label="Processed Video"
+                  value={recording.mlJob.processedVideoAsset?.status ?? "Missing"}
                 />
               </div>
-              <AssetActions
-                title="Snapshot asset"
-                accessState={snapshotAccessState}
-                isReady={snapshotAssetReady ?? false}
-                onRequestAccess={(action) =>
-                  onRequestSnapshotAccess(recording.snapshot?.id ?? "", action)
-                }
-              />
             </div>
           ) : null}
-        </div>
-      </div>
-
-      {recording.mlJob ? (
-        <div className="mt-5 rounded-[1.5rem] border border-[var(--panel-border)] bg-[var(--surface-container-low)] p-4">
-          <p className="text-sm font-semibold text-[var(--on-surface)]">ML outputs</p>
-          <div className="mt-3 grid gap-3 sm:grid-cols-3">
-            <RecordingMetaItem
-              label="Video IDs"
-              value={recording.mlJob.trackIds.join(", ") || "None"}
-            />
-            <RecordingMetaItem
-              label="PDF"
-              value={recording.mlJob.reportAsset?.status ?? "Missing"}
-            />
-            <RecordingMetaItem
-              label="Processed Video"
-              value={recording.mlJob.processedVideoAsset?.status ?? "Missing"}
-            />
-          </div>
         </div>
       ) : null}
     </article>
@@ -344,11 +303,15 @@ export function TeacherRecordingsPageContent() {
   const [classes, setClasses] = useState<TeacherClass[]>([]);
   const [selectedClassId, setSelectedClassId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [recordings, setRecordings] = useState<TeacherRecording[]>([]);
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta>({
+    page: 1,
+    limit: RECORDINGS_PAGE_LIMIT,
+    total: 0,
+    totalPages: 1,
+  });
   const [recordingAccessStates, setRecordingAccessStates] = useState<
-    Record<string, AssetAccessState>
-  >({});
-  const [snapshotAccessStates, setSnapshotAccessStates] = useState<
     Record<string, AssetAccessState>
   >({});
   const [isLoading, setIsLoading] = useState(true);
@@ -364,8 +327,13 @@ export function TeacherRecordingsPageContent() {
   const loadRecordings = useCallback(async (background = false) => {
     if (!selectedClassId) {
       setRecordings([]);
+      setPaginationMeta({
+        page: 1,
+        limit: RECORDINGS_PAGE_LIMIT,
+        total: 0,
+        totalPages: 1,
+      });
       setRecordingAccessStates({});
-      setSnapshotAccessStates({});
       setIsLoading(false);
       setIsRefreshing(false);
       return;
@@ -382,17 +350,19 @@ export function TeacherRecordingsPageContent() {
       const response = await teacherService.getRecordings({
         classId: selectedClassId,
         date: selectedDate || undefined,
+        page: currentPage,
+        limit: RECORDINGS_PAGE_LIMIT,
       });
-      setRecordings(response);
+      setRecordings(response.items);
+      setPaginationMeta(response.meta);
       setRecordingAccessStates({});
-      setSnapshotAccessStates({});
     } catch (error) {
       setLoadError(getRecordingsErrorMessage(error));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [selectedClassId, selectedDate]);
+  }, [currentPage, selectedClassId, selectedDate]);
 
   async function deleteRecording(recordingId: string) {
     setDeletingRecordingId(recordingId);
@@ -401,7 +371,11 @@ export function TeacherRecordingsPageContent() {
     try {
       await teacherService.deleteRecording(recordingId);
       setRecordingMutationMessage("Recording deleted.");
-      await loadRecordings(true);
+      if (recordings.length === 1 && currentPage > 1) {
+        setCurrentPage((page) => Math.max(1, page - 1));
+      } else {
+        await loadRecordings(true);
+      }
     } catch (error) {
       setRecordingMutationError(getApiErrorMessage(error));
     } finally {
@@ -448,14 +422,12 @@ export function TeacherRecordingsPageContent() {
   }, [isLoadingClasses, loadRecordings]);
 
   async function requestAccess(
-    kind: "recording" | "snapshot",
+    kind: "recording",
     id: string,
     action: AssetActionKind,
   ) {
-    const stateSetter =
-      kind === "recording" ? setRecordingAccessStates : setSnapshotAccessStates;
-    const stateMap =
-      kind === "recording" ? recordingAccessStates : snapshotAccessStates;
+    const stateSetter = setRecordingAccessStates;
+    const stateMap = recordingAccessStates;
     const currentState = stateMap[id] ?? DEFAULT_ASSET_ACCESS_STATE;
     const currentAccess = currentState.access;
 
@@ -479,10 +451,7 @@ export function TeacherRecordingsPageContent() {
     }));
 
     try {
-      const access =
-        kind === "recording"
-          ? await teacherService.getRecordingAccess(id)
-          : await teacherService.getSnapshotAccess(id);
+      const access = await teacherService.getRecordingAccess(id);
       const requestedUrl =
         action === "preview" ? access.previewUrl : access.downloadUrl;
 
@@ -519,7 +488,7 @@ export function TeacherRecordingsPageContent() {
       <DashboardPage
         eyebrow="Teacher / Recordings"
         title="Recordings"
-        description="Review recording and snapshot results exposed by the backend."
+        description="Review recording results exposed by the backend."
       >
         <DashboardLoadingState label="Loading recordings..." />
       </DashboardPage>
@@ -531,7 +500,7 @@ export function TeacherRecordingsPageContent() {
       <DashboardPage
         eyebrow="Teacher / Recordings"
         title="Recordings"
-        description="Review recording and snapshot results exposed by the backend."
+        description="Review recording results exposed by the backend."
       >
         <DashboardErrorState
           title="Could not load recordings"
@@ -555,7 +524,7 @@ export function TeacherRecordingsPageContent() {
     <DashboardPage
       eyebrow="Teacher / Recordings"
       title="Recordings"
-      description="Review recording and snapshot results exposed by the backend."
+      description="Review recording results exposed by the backend."
     >
       <DashboardSectionCard
         eyebrow="Filters"
@@ -582,6 +551,7 @@ export function TeacherRecordingsPageContent() {
               value={selectedClassId}
               onChange={(event) => {
                 setSelectedClassId(event.target.value);
+                setCurrentPage(1);
               }}
             >
               <option value="">Select classroom</option>
@@ -602,6 +572,7 @@ export function TeacherRecordingsPageContent() {
               disabled={!selectedClassId}
               onChange={(event) => {
                 setSelectedDate(event.target.value);
+                setCurrentPage(1);
               }}
             />
           </div>
@@ -617,11 +588,18 @@ export function TeacherRecordingsPageContent() {
         ) : null}
       </DashboardSectionCard>
 
-      <TeacherCameraRecordingPanel
-        onRecordingUploaded={() => {
-          void loadRecordings(true);
-        }}
-      />
+      {selectedClassId ? (
+        <>
+          <TeacherLiveRecordingPanel
+            classId={selectedClassId}
+            onRecordingProcessed={() => {
+              void loadRecordings(true);
+            }}
+          />
+
+          <TeacherMlUploadCard classId={selectedClassId} />
+        </>
+      ) : null}
 
 
       {selectedClassId ? (
@@ -637,6 +615,10 @@ export function TeacherRecordingsPageContent() {
           />
         ) : (
           <div className="space-y-4">
+            <div className="rounded-[1.25rem] bg-[var(--surface-container-low)] px-4 py-3 text-sm text-[var(--on-surface-variant)]">
+              Showing {recordings.length} of {paginationMeta.total} recording
+              {paginationMeta.total === 1 ? "" : "s"}, newest first.
+            </div>
             {recordings.map((recording) => (
               <RecordingCard
                 key={recording.id}
@@ -644,21 +626,8 @@ export function TeacherRecordingsPageContent() {
                 recordingAccessState={
                   recordingAccessStates[recording.id] ?? DEFAULT_ASSET_ACCESS_STATE
                 }
-                snapshotAccessState={
-                  recording.snapshot
-                    ? snapshotAccessStates[recording.snapshot.id] ??
-                      DEFAULT_ASSET_ACCESS_STATE
-                    : DEFAULT_ASSET_ACCESS_STATE
-                }
                 onRequestRecordingAccess={(recordingId, action) => {
                   void requestAccess("recording", recordingId, action);
-                }}
-                onRequestSnapshotAccess={(snapshotId, action) => {
-                  if (!snapshotId) {
-                    return;
-                  }
-
-                  void requestAccess("snapshot", snapshotId, action);
                 }}
                 onDeleteRecording={(recordingId) => {
                   void deleteRecording(recordingId);
@@ -666,6 +635,20 @@ export function TeacherRecordingsPageContent() {
                 isDeletingRecording={deletingRecordingId === recording.id}
               />
             ))}
+            <DashboardPagination
+              page={paginationMeta.page}
+              totalPages={paginationMeta.totalPages}
+              total={paginationMeta.total}
+              itemLabel="recording"
+              onPrevious={() => {
+                setCurrentPage((page) => Math.max(1, page - 1));
+              }}
+              onNext={() => {
+                setCurrentPage((page) =>
+                  Math.min(paginationMeta.totalPages, page + 1),
+                );
+              }}
+            />
           </div>
         )}
         </DashboardSectionCard>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, LogOut, UserRound } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { getLoginRouteForRole } from "@/lib/auth/access";
 import { APP_ROUTES } from "@/lib/constants/routes";
 import { useAuthStore } from "@/store";
 import { ThemeToggle } from "@/theme/theme-toggle";
@@ -32,6 +33,13 @@ export function DashboardHeader({ role }: DashboardHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const profileRoute = role === "TEACHER" ? APP_ROUTES.teacherProfile : null;
+
+  function handleLogout() {
+    setIsMenuOpen(false);
+    logout();
+    router.replace(getLoginRouteForRole(role));
+    router.refresh();
+  }
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -111,7 +119,7 @@ export function DashboardHeader({ role }: DashboardHeaderProps) {
               <button
                 type="button"
                 className="flex items-center gap-3 rounded-[1.1rem] px-3 py-3 text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--hover-overlay)]"
-                onClick={logout}
+                onClick={handleLogout}
               >
                 <LogOut className="size-4 text-[var(--on-surface-variant)]" />
                 Logout

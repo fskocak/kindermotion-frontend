@@ -27,7 +27,7 @@ export function SiteShell({
     <div className="min-h-screen px-4 py-4 sm:px-6 sm:py-6">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
         <header className="km-glass flex flex-col gap-5 rounded-[2rem] px-5 py-5 sm:px-7 sm:py-6 lg:flex-row lg:items-center lg:justify-between">
-          <BrandMark />
+          <BrandMark href={null} />
           <div className="flex flex-wrap items-center gap-3">
             <ThemeToggle />
             <Button asChild variant="ghost" size="sm">

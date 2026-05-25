@@ -15,6 +15,7 @@ export const API_ROUTES = {
     students: "/teacher/students",
     monitoringConfig: "/teacher/monitoring-config",
     alerts: "/teacher/alerts",
+    alertWatchPair: "/teacher/alerts/watch-pair",
     recordings: "/teacher/recordings",
     mlJobs: "/teacher/recordings/ml-jobs",
     snapshots: "/teacher/snapshots",

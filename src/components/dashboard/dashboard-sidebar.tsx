@@ -1,12 +1,15 @@
 import Link from "next/link";
 
 import { BrandMark } from "@/components/common/brand-mark";
+import { getDashboardRouteForRole } from "@/lib/auth/access";
 import { cn } from "@/lib/utils";
+import type { UserRole } from "@/types/auth";
 import type { DashboardNavItem } from "@/types/navigation";
 
 type DashboardSidebarProps = {
   items: readonly DashboardNavItem[];
   pathname: string;
+  role: UserRole;
 };
 
 function isNavItemActive(pathname: string, href: string) {
@@ -24,11 +27,15 @@ function isNavItemActive(pathname: string, href: string) {
 export function DashboardSidebar({
   items,
   pathname,
+  role,
 }: DashboardSidebarProps) {
   return (
     <aside className="km-glass flex h-fit flex-col gap-8 rounded-[2rem] p-5 sm:p-6 lg:sticky lg:top-5 lg:min-h-[calc(100vh-2.5rem)]">
       <div className="flex flex-col gap-4">
-        <BrandMark className="w-full min-w-0" />
+        <BrandMark
+          className="w-full min-w-0"
+          href={getDashboardRouteForRole(role)}
+        />
       </div>
 
       <nav className="flex flex-col gap-2.5">

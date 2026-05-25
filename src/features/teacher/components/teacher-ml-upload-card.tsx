@@ -14,6 +14,7 @@ import { Select } from "@/components/ui/select";
 import { getApiErrorMessage } from "@/lib/http/get-api-error-message";
 import { teacherService } from "@/services";
 import type {
+  TeacherAlertWatchPair,
   TeacherMlRoiBox,
   TeacherMlVideoInitResponse,
   TeacherStudent,
@@ -27,6 +28,28 @@ type TeacherMlUploadCardProps = {
   classId: string;
   onCompleted?: () => Promise<void> | void;
 };
+
+function derivePairWatchTrackIds(
+  watchPair: TeacherAlertWatchPair | null,
+  mappings: Array<{ trackId: number; studentId: string }>,
+) {
+  if (!watchPair?.isActive) {
+    return [];
+  }
+
+  const firstMapping = mappings.find(
+    (mapping) => mapping.studentId === watchPair.firstStudentId,
+  );
+  const secondMapping = mappings.find(
+    (mapping) => mapping.studentId === watchPair.secondStudentId,
+  );
+
+  if (!firstMapping || !secondMapping) {
+    return [];
+  }
+
+  return [firstMapping.trackId, secondMapping.trackId];
+}
 
 export function TeacherMlUploadCard({
   classId,
@@ -48,10 +71,6 @@ export function TeacherMlUploadCard({
   } | null>(null);
   const [classStudents, setClassStudents] = useState<TeacherStudent[]>([]);
   const [trackMappings, setTrackMappings] = useState<Record<number, string>>({});
-  const [pairWatchTrackIds, setPairWatchTrackIds] = useState<[string, string]>([
-    "",
-    "",
-  ]);
   const imageContainerRef = useRef<HTMLDivElement | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -84,7 +103,6 @@ export function TeacherMlUploadCard({
     setDraftRoi(null);
     setImageBounds(null);
     setTrackMappings({});
-    setPairWatchTrackIds(["", ""]);
 
     try {
       await loadClassStudents();
@@ -117,10 +135,6 @@ export function TeacherMlUploadCard({
       width,
       height,
     }));
-    const currentPairWatchTrackIds = pairWatchTrackIds
-      .filter(Boolean)
-      .map((value) => Number(value));
-
     const mappings = roiBoxes.map((_, index) => ({
       trackId: index + 1,
       studentId: trackMappings[index + 1] ?? "",
@@ -129,15 +143,6 @@ export function TeacherMlUploadCard({
 
     if (missingMapping) {
       setMlUploadError(`Select a student for Video ID ${missingMapping.trackId}.`);
-      return;
-    }
-
-    if (
-      pairWatchTrackIds[0] &&
-      pairWatchTrackIds[1] &&
-      pairWatchTrackIds[0] === pairWatchTrackIds[1]
-    ) {
-      setMlUploadError("Pair watch must use two different video IDs.");
       return;
     }
 
@@ -155,6 +160,11 @@ export function TeacherMlUploadCard({
     });
 
     try {
+      const watchPair = await teacherService.getAlertWatchPair(classId);
+      const currentPairWatchTrackIds = derivePairWatchTrackIds(
+        watchPair,
+        mappings,
+      );
       const mlResponse = await teacherService.processMlVideo({
         recordingKey: currentInitResponse.recording.recordingKey,
         objectKey: currentInitResponse.recording.objectKey,
@@ -192,7 +202,6 @@ export function TeacherMlUploadCard({
 
       setMlVideoFile(null);
       setTrackMappings({});
-      setPairWatchTrackIds(["", ""]);
       setMlUploadMessage("ML processing completed and IDs were matched to classroom students.");
       mlProcessing.completeJob(
         progressJobId,
@@ -317,7 +326,6 @@ export function TeacherMlUploadCard({
     setDraftRoi(null);
     setImageBounds(null);
     setTrackMappings({});
-    setPairWatchTrackIds(["", ""]);
     setClassStudents([]);
   }, [classId]);
 
@@ -372,7 +380,6 @@ export function TeacherMlUploadCard({
                 setRoiBoxes([]);
                 setDraftRoi(null);
                 setImageBounds(null);
-                setPairWatchTrackIds(["", ""]);
               }}
             />
           </div>
@@ -403,11 +410,10 @@ export function TeacherMlUploadCard({
           setRoiBoxes([]);
           setDraftRoi(null);
           setImageBounds(null);
-          setPairWatchTrackIds(["", ""]);
         }}
         eyebrow="ML setup"
         title="Mark children on the first frame"
-        description="Draw one box per child, match each video ID to a student, and optionally set a pair watch before ML processing starts."
+        description="Draw one box per child and match each video ID to a student. The saved alert watch pair is applied automatically."
         className="max-w-5xl"
       >
         {mlInitResponse ? (
@@ -517,10 +523,6 @@ export function TeacherMlUploadCard({
                                 delete next[index + 1];
                                 return next;
                               });
-                              setPairWatchTrackIds((current) => [
-                                current[0] === String(index + 1) ? "" : current[0],
-                                current[1] === String(index + 1) ? "" : current[1],
-                              ]);
                             }}
                             aria-label={`Remove box ${index + 1}`}
                           >
@@ -553,53 +555,6 @@ export function TeacherMlUploadCard({
                     </p>
                   )}
                 </div>
-
-                {roiBoxes.length >= 2 ? (
-                  <div className="mt-5 grid gap-3 rounded-[1.25rem] bg-[var(--surface-container-lowest)] p-3">
-                    <div>
-                      <p className="text-sm font-semibold text-[var(--on-surface)]">
-                        Pair watch
-                      </p>
-                      <p className="mt-1 text-sm text-[var(--on-surface-variant)]">
-                        Pick two video IDs to watch for close-contact alerts in this training run.
-                      </p>
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <Select
-                        value={pairWatchTrackIds[0]}
-                        onChange={(event) => {
-                          setPairWatchTrackIds((current) => [
-                            event.target.value,
-                            current[1],
-                          ]);
-                        }}
-                      >
-                        <option value="">Pair watch child 1</option>
-                        {roiBoxes.map((_, index) => (
-                          <option key={`pair-a-${index + 1}`} value={String(index + 1)}>
-                            Video ID {index + 1}
-                          </option>
-                        ))}
-                      </Select>
-                      <Select
-                        value={pairWatchTrackIds[1]}
-                        onChange={(event) => {
-                          setPairWatchTrackIds((current) => [
-                            current[0],
-                            event.target.value,
-                          ]);
-                        }}
-                      >
-                        <option value="">Pair watch child 2</option>
-                        {roiBoxes.map((_, index) => (
-                          <option key={`pair-b-${index + 1}`} value={String(index + 1)}>
-                            Video ID {index + 1}
-                          </option>
-                        ))}
-                      </Select>
-                    </div>
-                  </div>
-                ) : null}
               </div>
 
               <div className="flex flex-wrap gap-3">
