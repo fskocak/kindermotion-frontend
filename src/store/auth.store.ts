@@ -94,23 +94,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   async loginAdmin(payload) {
-    set({ isBootstrapping: true });
-    try {
-      return await loginWithRole(authService.loginAdmin, payload, get());
-    } catch (error) {
-      set({ isBootstrapping: false });
-      throw error;
-    }
+    return await loginWithRole(authService.loginAdmin, payload, get());
   },
 
   async loginTeacher(payload) {
-    set({ isBootstrapping: true });
-    try {
-      return await loginWithRole(authService.loginTeacher, payload, get());
-    } catch (error) {
-      set({ isBootstrapping: false });
-      throw error;
-    }
+    return await loginWithRole(authService.loginTeacher, payload, get());
   },
 
   logout() {
