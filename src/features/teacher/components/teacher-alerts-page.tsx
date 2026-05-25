@@ -1,7 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, RefreshCcw, Trash2, UsersRound } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  CheckCircle2,
+  RefreshCcw,
+  Trash2,
+  UsersRound,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 
 import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-state";
 import { DashboardErrorState } from "@/components/dashboard/dashboard-error-state";
@@ -49,8 +56,6 @@ type SelectedStudentPair = {
   secondStudentName: string;
 };
 
-const PAIR_STORAGE_KEY = "kindermotion:teacher-alert-student-pairs";
-
 function getSeverityBadgeVariant(severity: string) {
   return severity.toUpperCase() === "HIGH" ? "primary" : "muted";
 }
@@ -87,6 +92,62 @@ function formatDistanceScore(distanceScore: number | null) {
   return distanceScore.toFixed(2);
 }
 
+function formatSeconds(seconds: number) {
+  return `${Math.round(seconds)} s`;
+}
+
+function playAlertBeep() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const AudioContextClass =
+    window.AudioContext ??
+    (window as Window & { webkitAudioContext?: typeof AudioContext })
+      .webkitAudioContext;
+
+  if (!AudioContextClass) {
+    return;
+  }
+
+  const audioContext = new AudioContextClass();
+
+  const startTone = () => {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(660, audioContext.currentTime + 0.12);
+    gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.16,
+      audioContext.currentTime + 0.02,
+    );
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.0001,
+      audioContext.currentTime + 0.28,
+    );
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.3);
+    oscillator.onended = () => {
+      void audioContext.close();
+    };
+  };
+
+  if (audioContext.state === "suspended") {
+    void audioContext.resume().then(startTone).catch(() => {
+      void audioContext.close();
+    });
+    return;
+  }
+
+  startTone();
+}
+
 type AlertMetaItemProps = {
   label: string;
   value: string;
@@ -99,6 +160,62 @@ function AlertMetaItem({ label, value }: AlertMetaItemProps) {
         {label}
       </p>
       <p className="mt-2 text-sm font-medium text-[var(--on-surface)]">{value}</p>
+    </div>
+  );
+}
+
+type AlertMediaPreviewProps = {
+  alert: TeacherAlert;
+};
+
+function AlertMediaPreview({ alert }: AlertMediaPreviewProps) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const previewUrl = alert.media?.access.previewUrl;
+
+  useEffect(() => {
+    const videoElement = videoRef.current;
+
+    if (!videoElement || !alert.media) {
+      return;
+    }
+
+    const seekToAlert = () => {
+      videoElement.currentTime = alert.media?.alertOffsetSeconds ?? 0;
+    };
+
+    if (videoElement.readyState >= 1) {
+      seekToAlert();
+      return;
+    }
+
+    videoElement.addEventListener("loadedmetadata", seekToAlert, { once: true });
+
+    return () => {
+      videoElement.removeEventListener("loadedmetadata", seekToAlert);
+    };
+  }, [alert.media]);
+
+  if (!alert.media || !previewUrl) {
+    return null;
+  }
+
+  return (
+    <div className="mt-5 grid gap-3 rounded-[1.25rem] bg-[var(--surface-container-low)] p-4">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm font-semibold text-[var(--on-surface)]">
+          Alert video
+        </p>
+        <p className="text-xs font-medium text-[var(--on-surface-variant)]">
+          Starts at {formatSeconds(alert.media.alertOffsetSeconds)}
+        </p>
+      </div>
+      <video
+        ref={videoRef}
+        src={previewUrl}
+        controls
+        preload="metadata"
+        className="aspect-video w-full rounded-[1rem] bg-black object-contain"
+      />
     </div>
   );
 }
@@ -147,6 +264,8 @@ function AlertCard({ alert, isAcknowledging, onAcknowledge }: AlertCardProps) {
         </Button>
       </div>
 
+      <AlertMediaPreview alert={alert} />
+
       <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <AlertMetaItem label="Started At" value={formatDateTime(alert.startedAt)} />
         <AlertMetaItem label="Ended At" value={formatDateTime(alert.endedAt)} />
@@ -171,47 +290,6 @@ function buildPairId(classId: string, firstStudentId: string, secondStudentId: s
   return `${classId}:${left}:${right}`;
 }
 
-function loadStoredPairs() {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const rawValue = window.localStorage.getItem(PAIR_STORAGE_KEY);
-
-    if (!rawValue) {
-      return [];
-    }
-
-    const parsedValue = JSON.parse(rawValue);
-
-    if (!Array.isArray(parsedValue)) {
-      return [];
-    }
-
-    return parsedValue.filter(
-      (pair): pair is SelectedStudentPair =>
-        typeof pair?.id === "string" &&
-        typeof pair?.classId === "string" &&
-        typeof pair?.className === "string" &&
-        typeof pair?.firstStudentId === "string" &&
-        typeof pair?.firstStudentName === "string" &&
-        typeof pair?.secondStudentId === "string" &&
-        typeof pair?.secondStudentName === "string",
-    );
-  } catch {
-    return [];
-  }
-}
-
-function saveStoredPairs(pairs: SelectedStudentPair[]) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(PAIR_STORAGE_KEY, JSON.stringify(pairs));
-}
-
 export function TeacherAlertsPageContent() {
   const toast = useToast();
   const [alerts, setAlerts] = useState<TeacherAlert[]>([]);
@@ -220,15 +298,15 @@ export function TeacherAlertsPageContent() {
   const [selectedClassId, setSelectedClassId] = useState("");
   const [firstStudentId, setFirstStudentId] = useState("");
   const [secondStudentId, setSecondStudentId] = useState("");
-  const [selectedPairs, setSelectedPairs] = useState<SelectedStudentPair[]>(
-    () => loadStoredPairs(),
-  );
+  const [selectedPairs, setSelectedPairs] = useState<SelectedStudentPair[]>([]);
   const [statusFilter, setStatusFilter] = useState<AlertStatusFilter>("ALL");
   const [limit, setLimit] = useState<number>(20);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingClasses, setIsLoadingClasses] = useState(true);
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  const [isSavingPair, setIsSavingPair] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pairError, setPairError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -236,6 +314,7 @@ export function TeacherAlertsPageContent() {
   const [acknowledgingAlertId, setAcknowledgingAlertId] = useState<string | null>(
     null,
   );
+  const activeAlertIdsRef = useRef<Set<string>>(new Set());
 
   const loadAlerts = useCallback(
     async (background = false) => {
@@ -253,6 +332,21 @@ export function TeacherAlertsPageContent() {
           limit,
         });
 
+        const activeAlertIds = new Set(
+          response
+            .filter((alert) => alert.status === "ACTIVE")
+            .map((alert) => alert.id),
+        );
+        const hasNewActiveAlert = response.some(
+          (alert) =>
+            alert.status === "ACTIVE" && !activeAlertIdsRef.current.has(alert.id),
+        );
+
+        if (background && isSoundEnabled && hasNewActiveAlert) {
+          playAlertBeep();
+        }
+
+        activeAlertIdsRef.current = activeAlertIds;
         setAlerts(response);
       } catch (error) {
         setLoadError(getApiErrorMessage(error));
@@ -261,16 +355,20 @@ export function TeacherAlertsPageContent() {
         setIsRefreshing(false);
       }
     },
-    [limit, statusFilter],
+    [isSoundEnabled, limit, statusFilter],
   );
 
   useEffect(() => {
     void loadAlerts();
-  }, [loadAlerts]);
 
-  useEffect(() => {
-    saveStoredPairs(selectedPairs);
-  }, [selectedPairs]);
+    const intervalId = window.setInterval(() => {
+      void loadAlerts(true);
+    }, 15000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [loadAlerts]);
 
   useEffect(() => {
     let isActive = true;
@@ -321,22 +419,47 @@ export function TeacherAlertsPageContent() {
       try {
         setPairError(null);
         setIsLoadingStudents(true);
-        const response = await teacherService.getClassStudents(selectedClassId, {
-          page: 1,
-          limit: 100,
-        });
+        const [response, watchPair] = await Promise.all([
+          teacherService.getClassStudents(selectedClassId, {
+            page: 1,
+            limit: 100,
+          }),
+          teacherService.getAlertWatchPair(selectedClassId),
+        ]);
 
         if (!isActive) {
           return;
         }
 
         setStudents(response.items);
+        setSelectedPairs(
+          watchPair
+            ? [
+                {
+                  id: buildPairId(
+                    watchPair.classroomId,
+                    watchPair.firstStudentId,
+                    watchPair.secondStudentId,
+                  ),
+                  classId: watchPair.classroomId,
+                  className:
+                    classes.find((classItem) => classItem.id === watchPair.classroomId)
+                      ?.name ?? "Selected class",
+                  firstStudentId: watchPair.firstStudentId,
+                  firstStudentName: watchPair.firstStudent.fullName,
+                  secondStudentId: watchPair.secondStudentId,
+                  secondStudentName: watchPair.secondStudent.fullName,
+                },
+              ]
+            : [],
+        );
         setFirstStudentId("");
         setSecondStudentId("");
       } catch (error) {
         if (isActive) {
           setPairError(getApiErrorMessage(error));
           setStudents([]);
+          setSelectedPairs([]);
         }
       } finally {
         if (isActive) {
@@ -350,7 +473,7 @@ export function TeacherAlertsPageContent() {
     return () => {
       isActive = false;
     };
-  }, [selectedClassId]);
+  }, [classes, selectedClassId]);
 
   const selectedClass = classes.find((classItem) => classItem.id === selectedClassId);
   const firstStudentOptions = students.filter(
@@ -370,7 +493,7 @@ export function TeacherAlertsPageContent() {
     (alert) => alert.status === "ACTIVE",
   );
 
-  function handleAddPair() {
+  async function handleAddPair() {
     setPairError(null);
 
     if (!selectedClass) {
@@ -396,33 +519,56 @@ export function TeacherAlertsPageContent() {
       return;
     }
 
-    const pairId = buildPairId(selectedClass.id, firstStudent.id, secondStudent.id);
+    try {
+      setIsSavingPair(true);
+      const watchPair = await teacherService.upsertAlertWatchPair({
+        classroomId: selectedClass.id,
+        firstStudentId: firstStudent.id,
+        secondStudentId: secondStudent.id,
+      });
 
-    if (selectedPairs.some((pair) => pair.id === pairId)) {
-      setPairError("This student pair is already selected.");
+      setSelectedPairs([
+        {
+          id: buildPairId(
+            watchPair.classroomId,
+            watchPair.firstStudentId,
+            watchPair.secondStudentId,
+          ),
+          classId: selectedClass.id,
+          className: selectedClass.name,
+          firstStudentId: watchPair.firstStudentId,
+          firstStudentName: watchPair.firstStudent.fullName,
+          secondStudentId: watchPair.secondStudentId,
+          secondStudentName: watchPair.secondStudent.fullName,
+        },
+      ]);
+      setFirstStudentId("");
+      setSecondStudentId("");
+      toast.success("Alert watch pair saved.");
+    } catch (error) {
+      setPairError(getApiErrorMessage(error));
+    } finally {
+      setIsSavingPair(false);
+    }
+  }
+
+  async function handleRemovePair(pairId: string) {
+    if (!selectedClassId) {
       return;
     }
 
-    setSelectedPairs((currentPairs) => [
-      ...currentPairs,
-      {
-        id: pairId,
-        classId: selectedClass.id,
-        className: selectedClass.name,
-        firstStudentId: firstStudent.id,
-        firstStudentName: getTeacherStudentDisplayName(firstStudent),
-        secondStudentId: secondStudent.id,
-        secondStudentName: getTeacherStudentDisplayName(secondStudent),
-      },
-    ]);
-    setFirstStudentId("");
-    setSecondStudentId("");
-  }
-
-  function handleRemovePair(pairId: string) {
-    setSelectedPairs((currentPairs) =>
-      currentPairs.filter((pair) => pair.id !== pairId),
-    );
+    try {
+      setIsSavingPair(true);
+      await teacherService.deleteAlertWatchPair(selectedClassId);
+      setSelectedPairs((currentPairs) =>
+        currentPairs.filter((pair) => pair.id !== pairId),
+      );
+      toast.success("Alert watch pair removed.");
+    } catch (error) {
+      setPairError(getApiErrorMessage(error));
+    } finally {
+      setIsSavingPair(false);
+    }
   }
 
   async function handleAcknowledge(alertId: string) {
@@ -481,9 +627,9 @@ export function TeacherAlertsPageContent() {
       description="Review recent classroom distance alerts and acknowledge active items."
     >
       <DashboardSectionCard
-        eyebrow="Student pairs"
-        title="Pair monitoring"
-        description="Select student pairs inside a class. When these students fall under the configured distance threshold, the resulting distance alerts should be reviewed here."
+        eyebrow="Student pair"
+        title="Alert watch pair"
+        description="Select two students inside a class. Distance alerts are generated only for this saved pair when their tracked distance falls below 120px."
         actions={
           <Button
             type="button"
@@ -566,11 +712,11 @@ export function TeacherAlertsPageContent() {
             <Button
               type="button"
               size="sm"
-              disabled={isLoadingStudents || students.length < 2}
-              onClick={handleAddPair}
+              disabled={isSavingPair || isLoadingStudents || students.length < 2}
+              onClick={() => void handleAddPair()}
             >
               <UsersRound />
-              Add pair
+              {selectedPairs.length > 0 ? "Update pair" : "Save pair"}
             </Button>
           </div>
 
@@ -581,19 +727,19 @@ export function TeacherAlertsPageContent() {
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-base font-semibold text-[var(--on-surface)]">
-                    Selected student pairs
+                    Saved alert watch pair
                   </p>
                   <p className="mt-1 text-sm text-[var(--on-surface-variant)]">
-                    These pairs define who should be watched for threshold-based distance alerts.
+                    This pair defines who should be watched for threshold-based distance alerts.
                   </p>
                 </div>
                 <Badge>{selectedPairs.length}</Badge>
               </div>
 
               {selectedPairs.length === 0 ? (
-                <DashboardEmptyState
-                  title="No student pairs selected"
-                  description="Choose a class and two students to create the pair list teachers will review for distance threshold alerts."
+                  <DashboardEmptyState
+                  title="No alert watch pair selected"
+                  description="Choose a class and two students. If no pair is saved, no distance alerts are generated for recordings."
                 />
               ) : (
                 <div className="grid gap-3">
@@ -614,10 +760,11 @@ export function TeacherAlertsPageContent() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => handleRemovePair(pair.id)}
+                        disabled={isSavingPair}
+                        onClick={() => void handleRemovePair(pair.id)}
                       >
                         <Trash2 />
-                        Remove
+                        {isSavingPair ? "Removing..." : "Remove"}
                       </Button>
                     </div>
                   ))}
@@ -627,17 +774,17 @@ export function TeacherAlertsPageContent() {
 
             <div className="rounded-[1.5rem] bg-[var(--surface-container-low)] p-4">
               <p className="text-base font-semibold text-[var(--on-surface)]">
-                Alert list for selected pairs
+                Alert rule
               </p>
               <p className="mt-1 text-sm leading-6 text-[var(--on-surface-variant)]">
-                If a selected pair drops below the configured distance threshold,
-                the system should surface it as an active distance alert in this feed.
+                If the saved pair drops below 120px in a processed recording,
+                the system surfaces it as an active distance alert in this feed.
               </p>
 
               <div className="mt-4 grid gap-3">
                 {selectedPairs.length === 0 ? (
                   <p className="rounded-[1.25rem] bg-[var(--surface-container-lowest)] px-4 py-3 text-sm text-[var(--on-surface-variant)]">
-                    Add at least one pair to define the alert review list.
+                    Save one pair to enable distance alert generation.
                   </p>
                 ) : (
                   selectedPairs.map((pair) => (
@@ -654,7 +801,7 @@ export function TeacherAlertsPageContent() {
                         </span>
                       </div>
                       <p className="mt-2 text-sm text-[var(--on-surface-variant)]">
-                        Alert condition: pair distance below threshold.
+                        Alert condition: pair distance below 120px.
                       </p>
                     </div>
                   ))
@@ -708,6 +855,22 @@ export function TeacherAlertsPageContent() {
                 ))}
               </Select>
             </label>
+            <Button
+              type="button"
+              variant={isSoundEnabled ? "default" : "secondary"}
+              size="sm"
+              onClick={() => {
+                const nextSoundState = !isSoundEnabled;
+                setIsSoundEnabled(nextSoundState);
+
+                if (nextSoundState) {
+                  playAlertBeep();
+                }
+              }}
+            >
+              {isSoundEnabled ? <Volume2 /> : <VolumeX />}
+              {isSoundEnabled ? "Sound on" : "Sound off"}
+            </Button>
             <Button
               type="button"
               variant="secondary"

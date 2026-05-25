@@ -149,6 +149,14 @@ export type UpdateTeacherMonitoringConfigPayload = {
 
 export type TeacherAlertStatus = "ACTIVE" | "ACKNOWLEDGED" | "DISMISSED";
 
+export type TeacherAlertMedia = {
+  recordingId: string;
+  recordingStartedAt: string;
+  recordingEndedAt: string;
+  alertOffsetSeconds: number;
+  access: TeacherRecordingAssetAccess;
+};
+
 export type TeacherAlert = {
   id: string;
   classroomId: string;
@@ -162,6 +170,7 @@ export type TeacherAlert = {
   status: TeacherAlertStatus;
   createdAt: string;
   updatedAt: string;
+  media: TeacherAlertMedia | null;
 };
 
 export type TeacherAlertsListParams = {
@@ -175,9 +184,35 @@ export type TeacherAlertAcknowledgeResponse = {
   updatedAt: string;
 };
 
+export type TeacherAlertWatchPairStudent = {
+  id: string;
+  fullName: string;
+  studentId: number | null;
+};
+
+export type TeacherAlertWatchPair = {
+  id: string;
+  classroomId: string;
+  firstStudentId: string;
+  secondStudentId: string;
+  thresholdPx: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  firstStudent: TeacherAlertWatchPairStudent;
+  secondStudent: TeacherAlertWatchPairStudent;
+};
+
+export type UpsertTeacherAlertWatchPairPayload = {
+  classroomId: string;
+  firstStudentId: string;
+  secondStudentId: string;
+};
+
 export type TeacherRecordingsListParams = {
   classId?: string;
   date?: string;
+  page?: number;
   limit?: number;
 };
 
@@ -237,6 +272,8 @@ export type TeacherRecording = {
   snapshot?: TeacherRecordingSnapshot | null;
   mlJob?: TeacherMlProcessingJob | null;
 };
+
+export type TeacherRecordingsResponse = PaginatedResponse<TeacherRecording>;
 
 export type TeacherCameraRecordingResponse = {
   recording: {

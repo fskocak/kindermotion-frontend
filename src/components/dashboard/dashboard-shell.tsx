@@ -20,7 +20,7 @@ export function DashboardShell({ role, children }: DashboardShellProps) {
   return (
     <div className="min-h-screen px-3 py-3 sm:px-4 sm:py-4 lg:px-5 lg:py-5">
       <div className="mx-auto grid max-w-[1720px] gap-4 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-5">
-        <DashboardSidebar items={navItems} pathname={pathname} />
+        <DashboardSidebar items={navItems} pathname={pathname} role={role} />
 
         <div className="flex min-w-0 flex-col gap-5">
           <DashboardHeader role={role} />

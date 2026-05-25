@@ -6,18 +6,20 @@ import type {
   CreateTeacherStudentPayload,
   TeacherAlert,
   TeacherAlertAcknowledgeResponse,
+  TeacherAlertWatchPair,
   TeacherAlertsListParams,
   TeacherClass,
   TeacherClassStudentsResponse,
   TeacherMonitoringConfig,
   TeacherRecordingAssetAccess,
   TeacherCameraRecordingResponse,
-  TeacherRecording,
+  TeacherRecordingsResponse,
   TeacherRecordingsListParams,
   TeacherStudentListParams,
   TeacherStudent,
   UpdateTeacherStudentPayload,
   UpdateTeacherMonitoringConfigPayload,
+  UpsertTeacherAlertWatchPairPayload,
   TeacherStudentProfileResponse,
   TeacherMlVideoInitResponse,
   TeacherMlVideoUploadResponse,
@@ -120,13 +122,32 @@ export const teacherService = {
 
     return response.data;
   },
+  async getAlertWatchPair(classroomId: string) {
+    const response = await httpClient.get<TeacherAlertWatchPair | null>(
+      `${API_ROUTES.teacher.alertWatchPair}/${classroomId}`,
+    );
+
+    return response.data;
+  },
+  async upsertAlertWatchPair(payload: UpsertTeacherAlertWatchPairPayload) {
+    const response = await httpClient.patch<TeacherAlertWatchPair>(
+      API_ROUTES.teacher.alertWatchPair,
+      payload,
+    );
+
+    return response.data;
+  },
+  async deleteAlertWatchPair(classroomId: string) {
+    await httpClient.delete(`${API_ROUTES.teacher.alertWatchPair}/${classroomId}`);
+  },
   async getRecordings(params: TeacherRecordingsListParams = {}) {
-    const response = await httpClient.get<TeacherRecording[]>(
+    const response = await httpClient.get<TeacherRecordingsResponse>(
       API_ROUTES.teacher.recordings,
       {
         params: {
           classId: params.classId,
           date: params.date,
+          page: params.page,
           limit: params.limit,
         },
       },

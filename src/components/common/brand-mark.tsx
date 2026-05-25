@@ -6,18 +6,16 @@ import { brand } from "@/theme/brand";
 
 type BrandMarkProps = {
   className?: string;
-  href?: string;
+  href?: string | null;
 };
 
 export function BrandMark({ className, href = "/" }: BrandMarkProps) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        "group inline-flex min-w-0 items-center gap-3 transition-transform duration-300 ease-out hover:translate-y-[-1px]",
-        className,
-      )}
-    >
+  const classNames = cn(
+    "group inline-flex min-w-0 items-center gap-3 transition-transform duration-300 ease-out hover:translate-y-[-1px]",
+    className,
+  );
+  const content = (
+    <>
       <span className="relative flex size-14 items-center justify-center overflow-hidden rounded-[1.55rem] shadow-[var(--shadow-brand)] transition-all duration-300 ease-out group-hover:shadow-[var(--shadow-soft)]">
         <Image
           src="/KinderMotion.png"
@@ -37,6 +35,16 @@ export function BrandMark({ className, href = "/" }: BrandMarkProps) {
           {brand.signature}
         </span>
       </span>
+    </>
+  );
+
+  if (!href) {
+    return <div className={classNames}>{content}</div>;
+  }
+
+  return (
+    <Link href={href} className={classNames}>
+      {content}
     </Link>
   );
 }

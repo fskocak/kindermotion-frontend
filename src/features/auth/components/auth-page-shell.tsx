@@ -28,7 +28,7 @@ export function AuthPageShell({
           <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-[radial-gradient(circle,_var(--hero-glow)_0%,_transparent_68%)]" />
           <div className="relative flex h-full flex-col">
             <div className="flex items-center justify-between gap-4">
-              <BrandMark />
+              <BrandMark href={null} />
               <div className="flex items-center gap-3">
                 <ThemeToggle showLabel={false} />
                 <Badge>{brand.signature}</Badge>
