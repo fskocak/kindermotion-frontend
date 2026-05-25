@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, AlertCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { FeedbackBox } from "@/components/ui/feedback-box";
 import {
   Card,
   CardContent,
@@ -122,17 +123,20 @@ export function LoginForm({ mode, title, description }: LoginFormProps) {
             ) : null}
           </div>
 
-          <div
-            className={cn(
-              "rounded-[1.5rem] bg-[var(--surface-container-low)] px-4 py-3 text-sm text-[var(--on-surface-variant)]",
-              submitError
-                ? "bg-[var(--error-container)] text-[var(--on-error-container)]"
-                : "",
-            )}
-          >
-            {submitError ??
-              "Enter your credentials to securely sign in."}
-          </div>
+          {submitError ? (
+            <FeedbackBox
+              variant="error"
+              description={
+                submitError === "Invalid credentials"
+                  ? "Invalid email or password. Please try again."
+                  : submitError
+              }
+            />
+          ) : (
+            <div className="rounded-[1.5rem] bg-[var(--surface-container-low)] px-4 py-3 text-sm text-[var(--on-surface-variant)] transition-all duration-300">
+              Enter your credentials to securely sign in.
+            </div>
+          )}
 
           <Button
             type="submit"
